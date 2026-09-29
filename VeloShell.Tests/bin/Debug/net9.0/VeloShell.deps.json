@@ -15,7 +15,8 @@
           "AvaloniaUI.DiagnosticsSupport": "2.2.3",
           "CommunityToolkit.Mvvm": "8.4.2",
           "Konscious.Security.Cryptography.Argon2": "1.3.1",
-          "SSH.NET": "2026.0.0"
+          "SSH.NET": "2026.0.0",
+          "XTerm.NET": "1.2.0"
         },
         "runtime": {
           "VeloShell.dll": {}
@@ -589,6 +590,34 @@
             "fileVersion": "0.94.1.0"
           }
         }
+      },
+      "Unicode.net/2.0.0": {
+        "runtime": {
+          "lib/netstandard2.1/NeoSmart.Unicode.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "Wcwidth/3.0.0": {
+        "runtime": {
+          "lib/net8.0/Wcwidth.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.0.0.0"
+          }
+        }
+      },
+      "XTerm.NET/1.2.0": {
+        "dependencies": {
+          "Unicode.net": "2.0.0",
+          "Wcwidth": "3.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/XTerm.NET.dll": {
+            "assemblyVersion": "1.2.0.0",
+            "fileVersion": "1.2.0.0"
+          }
+        }
       }
     }
   },
@@ -856,6 +885,27 @@
       "sha512": "sha512-11YMr7FnAbL83bQmVxlhbIKHvSLxjO81D12Ej0QMSGXMDTxNA9MTOa4MQxx43nv5el/efuPHwzyrj6a5ha2gug==",
       "path": "tmds.dbus.protocol/0.94.1",
       "hashPath": "tmds.dbus.protocol.0.94.1.nupkg.sha512"
+    },
+    "Unicode.net/2.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fGf8GapJphDqeqGLp6uwSM/KQ2Sm2Y+KtMcFV0zh/C8eUWaBtIRFPH+FYAokBtgxGLpaCVCLsjQCymPMl4Z1EA==",
+      "path": "unicode.net/2.0.0",
+      "hashPath": "unicode.net.2.0.0.nupkg.sha512"
+    },
+    "Wcwidth/3.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-w9m/v7PuW8qhlpFKboa+otS5PdRpCxQ0cCT/qkD+gih0FKtqoZECkgwnRprX6+aA75hz3pXvpPGQByx0wszHyw==",
+      "path": "wcwidth/3.0.0",
+      "hashPath": "wcwidth.3.0.0.nupkg.sha512"
+    },
+    "XTerm.NET/1.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZcvxAlMjE6i3m08H2sH5EtqZrRmaQ+Uk9s+wLNjhMRTusgmKCRj2Pl7L0rDjWRpRvTxvmeOU2m4cgulgkkIhlw==",
+      "path": "xterm.net/1.2.0",
+      "hashPath": "xterm.net.1.2.0.nupkg.sha512"
     }
   }
 }

@@ -32,16 +32,17 @@
             </Grid>
         </Border>
 
-        <!-- Main Content Area: Dashboard (Top) + SFTP Browser (Bottom) -->
-        <Grid Grid.Row="1" RowDefinitions="Auto,4,*">
-            <!-- Top Dashboard -->
-            <views:DashboardView Grid.Row="0" DataContext="{Binding Dashboard}" />
-
-            <!-- Resizable Splitter -->
-            <GridSplitter Grid.Row="1" Background="#20808080" ResizeDirection="Rows" />
-
-            <!-- Bottom SFTP Browser -->
-            <views:SftpBrowserView Grid.Row="2" DataContext="{Binding Sftp}" />
-        </Grid>
+        <!-- Main Content Area: TabControl with Terminal, SFTP, and Dashboard -->
+        <TabControl Grid.Row="1" TabStripPlacement="Top">
+            <TabItem Header="交互式终端">
+                <views:TerminalView DataContext="{Binding Terminal}" />
+            </TabItem>
+            <TabItem Header="SFTP 文件">
+                <views:SftpBrowserView DataContext="{Binding Sftp}" />
+            </TabItem>
+            <TabItem Header="性能监控">
+                <views:DashboardView DataContext="{Binding Dashboard}" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

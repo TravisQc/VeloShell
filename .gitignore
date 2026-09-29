@@ -1,6 +1,5 @@
 /.agents
 /.claude
 /openspec
-/bin
-/obj
-/obj
+**/bin/
+**/obj/

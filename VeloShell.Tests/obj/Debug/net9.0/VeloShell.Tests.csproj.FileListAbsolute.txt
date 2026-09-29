@@ -183,3 +183,6 @@ E:\Code\Win32\VeloShell\VeloShell.Tests\obj\Debug\net9.0\VeloShell.Tests.genrunt
 E:\Code\Win32\VeloShell\VeloShell.Tests\obj\Debug\net9.0\ref\VeloShell.Tests.dll
 E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
 E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Renci.SshNet.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\NeoSmart.Unicode.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Wcwidth.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\XTerm.NET.dll

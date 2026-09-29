@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VeloShell.ViewModels"
+             xmlns:controls="using:VeloShell.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+             x:Class="VeloShell.Views.TerminalView"
+             x:DataType="vm:TerminalViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+        <!-- Terminal Body & Collapsible Command History Drawer -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto">
+            <!-- Left: Terminal Control + ScrollBar -->
+            <Grid Grid.Column="0" ColumnDefinitions="*,Auto" Background="#1E1E1E">
+                <controls:TerminalControl x:Name="TerminalCtrl"
+                                          Grid.Column="0"
+                                          Focusable="True" />
+                <ScrollBar Grid.Column="1"
+                           Orientation="Vertical"
+                           Minimum="0"
+                           Maximum="{Binding #TerminalCtrl.BaseY}"
+                           Value="{Binding #TerminalCtrl.ViewportY, Mode=TwoWay}"
+                           ViewportSize="{Binding #TerminalCtrl.Rows}"
+                           Width="14"
+                           Background="#2D2D2D" />
+            </Grid>
+
+            <!-- Middle: Splitter for History -->
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          Background="#252526"
+                          ResizeDirection="Columns"
+                          IsVisible="{Binding IsHistoryPaneOpen}" />
+
+            <!-- Right: Command History Drawer -->
+            <Border Grid.Column="2"
+                    Width="280"
+                    Background="#252526"
+                    BorderBrush="#333333"
+                    BorderThickness="1,0,0,0"
+                    IsVisible="{Binding IsHistoryPaneOpen}">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <!-- Drawer Header -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="10,8">
+                        <TextBlock Text="命令历史" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Content="清空" Command="{Binding ClearHistoryCommand}"
+                                Padding="8,2" FontSize="11" Margin="4,0" />
+                        <Button Grid.Column="2" Content="✕" Command="{Binding ToggleHistoryCommand}"
+                                Padding="6,2" FontSize="11" />
+                    </Grid>
+
+                    <!-- Search Filter Box -->
+                    <TextBox Grid.Row="1"
+                             Margin="10,0,10,8"
+                             PlaceholderText="搜索历史命令..."
+                             Text="{Binding SearchHistoryQuery}"
+                             FontSize="12" />
+
+                    <!-- History List -->
+                    <ListBox Grid.Row="2"
+                             ItemsSource="{Binding HistoryItems}"
+                             Background="Transparent"
+                             Padding="4">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto" Margin="4,2">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="{Binding CommandText}"
+                                                   FontFamily="Cascadia Mono, Consolas, monospace"
+                                                   FontSize="12"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                                                   FontSize="10"
+                                                   Foreground="#808080" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Content="回填"
+                                            FontSize="11"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding $parent[UserControl].((vm:TerminalViewModel)DataContext).InsertCommandCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Bottom Terminal Toolbar -->
+        <Border Grid.Row="1" Background="#252526" Padding="8,4" BorderBrush="#333333" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#888888" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="命令历史"
+                            Command="{Binding ToggleHistoryCommand}"
+                            Padding="8,2"
+                            FontSize="12" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

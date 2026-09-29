@@ -21,6 +21,7 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
 
     public DashboardViewModel Dashboard { get; }
     public SftpBrowserViewModel Sftp { get; }
+    public TerminalViewModel Terminal { get; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
@@ -56,6 +57,7 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
         Session = session ?? throw new ArgumentNullException(nameof(session));
         Dashboard = new DashboardViewModel(collector);
         Sftp = new SftpBrowserViewModel(sftp, dialogs);
+        Terminal = new TerminalViewModel(session);
 
         Session.StateChanged += OnSessionStateChanged;
     }
@@ -73,6 +75,7 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
             await Session.ConnectAsync();
             Dashboard.StartMonitoring();
             await Sftp.InitializeAsync();
+            _ = Terminal.StartShellAsync();
         }
         catch (Exception ex)
         {
@@ -122,6 +125,7 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
         _disposed = true;
 
         Session.StateChanged -= OnSessionStateChanged;
+        Terminal.Dispose();
         Dashboard.Dispose();
         Session.Dispose();
     }
@@ -132,6 +136,7 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
         _disposed = true;
 
         Session.StateChanged -= OnSessionStateChanged;
+        Terminal.Dispose();
         Dashboard.Dispose();
         await Session.DisposeAsync();
         GC.SuppressFinalize(this);

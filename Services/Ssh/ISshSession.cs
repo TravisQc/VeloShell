@@ -21,8 +21,20 @@ public interface ISshSession : IAsyncDisposable, IDisposable
     bool IsConnected { get; }
     SshClient? SshClient { get; }
     SftpClient? SftpClient { get; }
+    ShellStream? ShellStream { get; }
 
     Task ConnectAsync(CancellationToken cancellationToken = default);
     Task DisconnectAsync();
     Task<string> ExecuteCommandAsync(string commandText, TimeSpan? timeout = null, CancellationToken cancellationToken = default);
+
+    Task<ShellStream> CreateShellStreamAsync(
+        string terminalName = "xterm-256color",
+        uint columns = 80,
+        uint rows = 24,
+        uint width = 800,
+        uint height = 600,
+        int bufferSize = 4096,
+        CancellationToken cancellationToken = default);
+
+    void SendWindowChange(uint columns, uint rows, uint width, uint height);
 }

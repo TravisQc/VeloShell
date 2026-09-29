@@ -76,4 +76,34 @@ public class SshSessionTests
         await session.DisconnectAsync();
         Assert.Equal(SessionState.Disconnected, session.State);
     }
+
+    [Fact]
+    public async Task CreateShellStreamAsync_WhenDisconnected_ThrowsInvalidOperationException()
+    {
+        var connection = new Connection
+        {
+            Host = "127.0.0.1",
+            Port = 22,
+            Username = "test"
+        };
+        using var session = new SshSession(connection, "pwd");
+
+        Assert.Null(session.ShellStream);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => session.CreateShellStreamAsync());
+    }
+
+    [Fact]
+    public void SendWindowChange_WhenDisconnectedOrNoStream_DoesNotThrow()
+    {
+        var connection = new Connection
+        {
+            Host = "127.0.0.1",
+            Port = 22,
+            Username = "test"
+        };
+        using var session = new SshSession(connection, "pwd");
+
+        var ex = Record.Exception(() => session.SendWindowChange(120, 40, 960, 600));
+        Assert.Null(ex);
+    }
 }

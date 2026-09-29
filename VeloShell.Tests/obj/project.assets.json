@@ -311,6 +311,26 @@
           }
         }
       },
+      "AvaloniaUI.DiagnosticsSupport/2.2.3": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+          "Microsoft.IO.RecyclableMemoryStream": "3.0.1"
+        },
+        "compile": {
+          "lib/net8.0/AvaloniaUI.DiagnosticsSupport.Avalonia.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/AvaloniaUI.DiagnosticsSupport.Avalonia.dll": {}
+        },
+        "build": {
+          "buildTransitive/AvaloniaUI.DiagnosticsSupport.props": {},
+          "buildTransitive/AvaloniaUI.DiagnosticsSupport.targets": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/AvaloniaUI.DiagnosticsSupport.props": {}
+        }
+      },
       "BouncyCastle.Cryptography/2.7.0": {
         "type": "package",
         "compile": {
@@ -566,6 +586,19 @@
         },
         "build": {
           "buildTransitive/net6.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.IO.RecyclableMemoryStream/3.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.NET.Test.Sdk/17.12.0": {
@@ -1062,6 +1095,41 @@
           }
         }
       },
+      "Unicode.net/2.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/NeoSmart.Unicode.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.1/NeoSmart.Unicode.dll": {}
+        }
+      },
+      "Wcwidth/3.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Wcwidth.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Wcwidth.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "XTerm.NET/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Unicode.net": "2.0.0",
+          "Wcwidth": "3.0.0"
+        },
+        "compile": {
+          "lib/net6.0/XTerm.NET.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/XTerm.NET.dll": {}
+        }
+      },
       "xunit/2.9.2": {
         "type": "package",
         "dependencies": {
@@ -1166,9 +1234,11 @@
           "Avalonia.Desktop": "12.1.3",
           "Avalonia.Fonts.Inter": "12.1.3",
           "Avalonia.Themes.Fluent": "12.1.3",
+          "AvaloniaUI.DiagnosticsSupport": "2.2.3",
           "CommunityToolkit.Mvvm": "8.4.2",
           "Konscious.Security.Cryptography.Argon2": "1.3.1",
-          "SSH.NET": "2026.0.0"
+          "SSH.NET": "2026.0.0",
+          "XTerm.NET": "1.2.0"
         },
         "compile": {
           "bin/placeholder/VeloShell.dll": {}
@@ -1535,6 +1605,28 @@
         "lib/net10.0/Avalonia.X11.xml",
         "lib/net8.0/Avalonia.X11.dll",
         "lib/net8.0/Avalonia.X11.xml"
+      ]
+    },
+    "AvaloniaUI.DiagnosticsSupport/2.2.3": {
+      "sha512": "kQCInYusi2c9tjd9hV05Lln6Csbo07kiC672M3G7dsalDBe2j+pOk3We2nzdyy5ptQYy/9gQiC8ZaHhb6u/5Kw==",
+      "type": "package",
+      "path": "avaloniaui.diagnosticssupport/2.2.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "avaloniaui.diagnosticssupport.2.2.3.nupkg.sha512",
+        "avaloniaui.diagnosticssupport.nuspec",
+        "build/AvaloniaUI.DiagnosticsSupport.props",
+        "build/AvaloniaUI.DiagnosticsSupport.targets",
+        "buildMultiTargeting/AvaloniaUI.DiagnosticsSupport.props",
+        "buildTransitive/AvaloniaUI.DiagnosticsSupport.props",
+        "buildTransitive/AvaloniaUI.DiagnosticsSupport.targets",
+        "icon.png",
+        "lib/net10.0/AvaloniaUI.DiagnosticsSupport.Avalonia.dll",
+        "lib/net10.0/v11/AvaloniaUI.DiagnosticsSupport.Avalonia.dll",
+        "lib/net8.0/AvaloniaUI.DiagnosticsSupport.Avalonia.dll",
+        "lib/net8.0/v11/AvaloniaUI.DiagnosticsSupport.Avalonia.dll"
       ]
     },
     "BouncyCastle.Cryptography/2.7.0": {
@@ -2049,6 +2141,24 @@
         "microsoft.extensions.logging.abstractions.8.0.3.nupkg.sha512",
         "microsoft.extensions.logging.abstractions.nuspec",
         "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.IO.RecyclableMemoryStream/3.0.1": {
+      "sha512": "s/s20YTVY9r9TPfTrN5g8zPF1YhwxyqO6PxUkrYTGI2B+OGPe9AdajWZrLhFqXIvqIW23fnUE4+ztrUWNU1+9g==",
+      "type": "package",
+      "path": "microsoft.io.recyclablememorystream/3.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll",
+        "lib/net6.0/Microsoft.IO.RecyclableMemoryStream.xml",
+        "lib/netstandard2.0/Microsoft.IO.RecyclableMemoryStream.dll",
+        "lib/netstandard2.0/Microsoft.IO.RecyclableMemoryStream.xml",
+        "lib/netstandard2.1/Microsoft.IO.RecyclableMemoryStream.dll",
+        "lib/netstandard2.1/Microsoft.IO.RecyclableMemoryStream.xml",
+        "microsoft.io.recyclablememorystream.3.0.1.nupkg.sha512",
+        "microsoft.io.recyclablememorystream.nuspec"
       ]
     },
     "Microsoft.NET.Test.Sdk/17.12.0": {
@@ -2612,6 +2722,55 @@
         "tmds.dbus.protocol.nuspec"
       ]
     },
+    "Unicode.net/2.0.0": {
+      "sha512": "fGf8GapJphDqeqGLp6uwSM/KQ2Sm2Y+KtMcFV0zh/C8eUWaBtIRFPH+FYAokBtgxGLpaCVCLsjQCymPMl4Z1EA==",
+      "type": "package",
+      "path": "unicode.net/2.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net20/NeoSmart.Unicode.dll",
+        "lib/net40/NeoSmart.Unicode.dll",
+        "lib/netstandard1.3/NeoSmart.Unicode.dll",
+        "lib/netstandard2.1/NeoSmart.Unicode.dll",
+        "unicode.net.2.0.0.nupkg.sha512",
+        "unicode.net.nuspec"
+      ]
+    },
+    "Wcwidth/3.0.0": {
+      "sha512": "w9m/v7PuW8qhlpFKboa+otS5PdRpCxQ0cCT/qkD+gih0FKtqoZECkgwnRprX6+aA75hz3pXvpPGQByx0wszHyw==",
+      "type": "package",
+      "path": "wcwidth/3.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net6.0/Wcwidth.dll",
+        "lib/net6.0/Wcwidth.xml",
+        "lib/net7.0/Wcwidth.dll",
+        "lib/net7.0/Wcwidth.xml",
+        "lib/net8.0/Wcwidth.dll",
+        "lib/net8.0/Wcwidth.xml",
+        "lib/netstandard2.0/Wcwidth.dll",
+        "lib/netstandard2.0/Wcwidth.xml",
+        "wcwidth.3.0.0.nupkg.sha512",
+        "wcwidth.nuspec"
+      ]
+    },
+    "XTerm.NET/1.2.0": {
+      "sha512": "ZcvxAlMjE6i3m08H2sH5EtqZrRmaQ+Uk9s+wLNjhMRTusgmKCRj2Pl7L0rDjWRpRvTxvmeOU2m4cgulgkkIhlw==",
+      "type": "package",
+      "path": "xterm.net/1.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net6.0/XTerm.NET.dll",
+        "xterm.net.1.2.0.nupkg.sha512",
+        "xterm.net.nuspec"
+      ]
+    },
     "xunit/2.9.2": {
       "sha512": "7LhFS2N9Z6Xgg8aE5lY95cneYivRMfRI8v+4PATa4S64D5Z/Plkg0qa8dTRHSiGRgVZ/CL2gEfJDE5AUhOX+2Q==",
       "type": "package",
@@ -2767,6 +2926,7 @@
       "Microsoft.NET.Test.Sdk >= 17.12.0",
       "SSH.NET >= 2026.0.0",
       "VeloShell >= 1.0.0",
+      "XTerm.NET >= 1.2.0",
       "coverlet.collector >= 6.0.2",
       "xunit >= 2.9.2",
       "xunit.runner.visualstudio >= 2.8.2"
@@ -2797,6 +2957,7 @@
       },
       "frameworks": {
         "net9.0": {
+          "framework": "net9.0",
           "targetAlias": "net9.0",
           "projectReferences": {
             "E:\\Code\\Win32\\VeloShell\\VeloShell.csproj": {
@@ -2819,6 +2980,7 @@
     },
     "frameworks": {
       "net9.0": {
+        "framework": "net9.0",
         "targetAlias": "net9.0",
         "dependencies": {
           "Microsoft.NET.Test.Sdk": {
@@ -2828,6 +2990,10 @@
           "SSH.NET": {
             "target": "Package",
             "version": "[2026.0.0, )"
+          },
+          "XTerm.NET": {
+            "target": "Package",
+            "version": "[1.2.0, )"
           },
           "coverlet.collector": {
             "target": "Package",

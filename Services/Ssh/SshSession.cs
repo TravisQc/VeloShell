@@ -12,9 +12,11 @@ public class SshSession : ISshSession, IDisposable
     private readonly SshSessionConfig _config;
     private readonly Func<ConnectionInfo, SshClient>? _sshClientFactory;
     private readonly Func<ConnectionInfo, SftpClient>? _sftpClientFactory;
+    private readonly Func<SshClient, string, uint, uint, uint, uint, int, ShellStream>? _shellStreamFactory;
 
     private SshClient? _sshClient;
     private SftpClient? _sftpClient;
+    private ShellStream? _shellStream;
     private bool _disposed;
 
     public string Id { get; } = Guid.NewGuid().ToString("N");
@@ -29,29 +31,34 @@ public class SshSession : ISshSession, IDisposable
     public bool IsConnected => State == SessionState.Connected && (_sshClient?.IsConnected == true);
     public SshClient? SshClient => _sshClient;
     public SftpClient? SftpClient => _sftpClient;
+    public ShellStream? ShellStream => _shellStream;
 
     public SshSession(
         Connection connection,
         string? secret,
         Func<ConnectionInfo, SshClient>? sshClientFactory = null,
-        Func<ConnectionInfo, SftpClient>? sftpClientFactory = null)
+        Func<ConnectionInfo, SftpClient>? sftpClientFactory = null,
+        Func<SshClient, string, uint, uint, uint, uint, int, ShellStream>? shellStreamFactory = null)
     {
         Connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _config = SshSessionConfig.FromConnection(connection, secret);
         _sshClientFactory = sshClientFactory;
         _sftpClientFactory = sftpClientFactory;
+        _shellStreamFactory = shellStreamFactory;
     }
 
     public SshSession(
         Connection connection,
         SshSessionConfig config,
         Func<ConnectionInfo, SshClient>? sshClientFactory = null,
-        Func<ConnectionInfo, SftpClient>? sftpClientFactory = null)
+        Func<ConnectionInfo, SftpClient>? sftpClientFactory = null,
+        Func<SshClient, string, uint, uint, uint, uint, int, ShellStream>? shellStreamFactory = null)
     {
         Connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _sshClientFactory = sshClientFactory;
         _sftpClientFactory = sftpClientFactory;
+        _shellStreamFactory = shellStreamFactory;
     }
 
     private void SetState(SessionState newState, string? errorMessage = null)
@@ -143,6 +150,51 @@ public class SshSession : ISshSession, IDisposable
         }, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<ShellStream> CreateShellStreamAsync(
+        string terminalName = "xterm-256color",
+        uint columns = 80,
+        uint rows = 24,
+        uint width = 800,
+        uint height = 600,
+        int bufferSize = 4096,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsConnected || _sshClient == null)
+            throw new InvalidOperationException("SSH 会话未连接，无法创建终端 Shell 通道");
+
+        return await Task.Run(() =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (_shellStream != null)
+            {
+                try { _shellStream.Dispose(); } catch { }
+                _shellStream = null;
+            }
+
+            _shellStream = _shellStreamFactory != null
+                ? _shellStreamFactory(_sshClient, terminalName, columns, rows, width, height, bufferSize)
+                : _sshClient.CreateShellStream(terminalName, columns, rows, width, height, bufferSize);
+
+            return _shellStream;
+        }, cancellationToken).ConfigureAwait(false);
+    }
+
+    public void SendWindowChange(uint columns, uint rows, uint width, uint height)
+    {
+        if (_shellStream != null && IsConnected)
+        {
+            try
+            {
+                _shellStream.ChangeWindowSize(columns, rows, width, height);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SendWindowChange failed: {ex.Message}");
+            }
+        }
+    }
+
     private void OnClientError(object? sender, ExceptionEventArgs e)
     {
         SetState(SessionState.Error, e.Exception.Message);
@@ -150,6 +202,16 @@ public class SshSession : ISshSession, IDisposable
 
     private void CleanupClients()
     {
+        if (_shellStream != null)
+        {
+            try
+            {
+                _shellStream.Dispose();
+            }
+            catch { /* Ignore cleanup errors */ }
+            finally { _shellStream = null; }
+        }
+
         if (_sftpClient != null)
         {
             try
