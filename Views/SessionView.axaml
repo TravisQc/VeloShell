@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VeloShell.ViewModels"
+             xmlns:views="using:VeloShell.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+             x:Class="VeloShell.Views.SessionView"
+             x:DataType="vm:SessionViewModel">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Top Session Status Header -->
+        <Border Grid.Row="0" Background="#14808080" Padding="12,8" BorderBrush="#20808080" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Connection.Host, StringFormat='({0})'}" Foreground="#808080" FontSize="13" VerticalAlignment="Center" />
+                    <!-- Status Badge -->
+                    <Border CornerRadius="3" Padding="6,2"
+                            Background="{Binding IsConnected, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#DDD" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Content="重新连接" Command="{Binding ReconnectCommand}"
+                            IsVisible="{Binding IsDisconnectedOrError}" Padding="10,4" />
+                    <Button Content="断开连接" Command="{Binding DisconnectCommand}"
+                            IsVisible="{Binding IsConnected}" Padding="10,4" />
+                    <Button Content="关闭会话" Command="{Binding CloseCommand}" Padding="10,4" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area: Dashboard (Top) + SFTP Browser (Bottom) -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,4,*">
+            <!-- Top Dashboard -->
+            <views:DashboardView Grid.Row="0" DataContext="{Binding Dashboard}" />
+
+            <!-- Resizable Splitter -->
+            <GridSplitter Grid.Row="1" Background="#20808080" ResizeDirection="Rows" />
+
+            <!-- Bottom SFTP Browser -->
+            <views:SftpBrowserView Grid.Row="2" DataContext="{Binding Sftp}" />
+        </Grid>
+    </Grid>
+</UserControl>

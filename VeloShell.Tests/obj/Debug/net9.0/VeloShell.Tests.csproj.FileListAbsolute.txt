@@ -181,3 +181,5 @@ E:\Code\Win32\VeloShell\VeloShell.Tests\obj\Debug\net9.0\refint\VeloShell.Tests.
 E:\Code\Win32\VeloShell\VeloShell.Tests\obj\Debug\net9.0\VeloShell.Tests.pdb
 E:\Code\Win32\VeloShell\VeloShell.Tests\obj\Debug\net9.0\VeloShell.Tests.genruntimeconfig.cache
 E:\Code\Win32\VeloShell\VeloShell.Tests\obj\Debug\net9.0\ref\VeloShell.Tests.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Renci.SshNet.dll

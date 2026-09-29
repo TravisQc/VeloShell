@@ -3,15 +3,19 @@
         xmlns:vm="using:VeloShell.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
         x:Class="VeloShell.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Width="900" Height="600"
+        Width="1000" Height="650"
         Title="VeloShell">
 
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8" Spacing="6">
+            <Button Content="🚀 连接" Command="{Binding ConnectSelectedCommand}"
+                    IsEnabled="{Binding SelectedNode.Connection, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    FontWeight="SemiBold" />
+            <Border Width="1" Background="#40808080" Margin="2,2" />
             <Button Content="新建连接" Command="{Binding NewConnectionCommand}" />
             <Button Content="新建文件夹" Command="{Binding NewFolderCommand}" />
             <Button Content="编辑" Command="{Binding EditConnectionCommand}" />
@@ -27,37 +31,47 @@
             <TextBlock Text="{Binding StatusText}" FontSize="12" />
         </Border>
 
-        <Grid ColumnDefinitions="300,*">
+        <Grid ColumnDefinitions="280,4,*">
             <TreeView x:Name="ConnectionTree" Grid.Column="0"
                       DragDrop.AllowDrop="True"
                       ItemsSource="{Binding Nodes}"
-                      SelectedItem="{Binding SelectedNode}">
+                      SelectedItem="{Binding SelectedNode}"
+                      DoubleTapped="OnTreeDoubleTapped">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate DataType="vm:NodeViewModel" ItemsSource="{Binding Children}">
-                        <TextBlock Text="{Binding Label}" Padding="2,3" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="2,3">
+                            <TextBlock Text="📁" IsVisible="{Binding IsFolder}" FontSize="12" />
+                            <TextBlock Text="🖥️" IsVisible="{Binding !IsFolder}" FontSize="12" />
+                            <TextBlock Text="{Binding Label}" />
+                        </StackPanel>
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
 
-            <Border Grid.Column="1" Padding="20" BorderBrush="#20808080" BorderThickness="1,0,0,0">
-                <StackPanel Spacing="10"
-                            IsVisible="{Binding SelectedNode.Connection, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <TextBlock Text="{Binding SelectedNode.Connection.Label}" FontSize="18" FontWeight="SemiBold" />
-                    <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="主机" Foreground="#90808080" />
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedNode.Connection.Host}" />
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="端口" Foreground="#90808080" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedNode.Connection.Port}" />
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="用户名" Foreground="#90808080" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedNode.Connection.Username}" />
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="认证方式" Foreground="#90808080" />
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedNode.Connection.AuthMethod}" />
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="备注" Foreground="#90808080" />
-                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedNode.Connection.Notes}" TextWrapping="Wrap" />
-                    </Grid>
-                    <TextBlock Text="提示:凭据已加密保存,不在此处明文显示。" Foreground="#90808080" FontSize="12" />
-                </StackPanel>
-            </Border>
+            <GridSplitter Grid.Column="1" Background="#20808080" ResizeDirection="Columns" />
+
+            <TabControl Grid.Column="2"
+                        ItemsSource="{Binding Tabs}"
+                        SelectedItem="{Binding SelectedTab}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ViewModelBase">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Header}" VerticalAlignment="Center" />
+                            <Button Content="✕"
+                                    Command="{Binding ((vm:MainViewModel)DataContext).CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                    CommandParameter="{Binding}"
+                                    IsVisible="{Binding CanClose}"
+                                    Background="Transparent" BorderThickness="0"
+                                    Padding="2" Margin="4,0,0,0" FontSize="10" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <ContentControl Content="{Binding}" />
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
         </Grid>
     </DockPanel>
 </Window>

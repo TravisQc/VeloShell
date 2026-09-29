@@ -27,6 +27,14 @@ public partial class MainWindow : Window
         AddHandler(DragDrop.DropEvent, OnDrop);
     }
 
+    private void OnTreeDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm && vm.SelectedNode is { IsFolder: false })
+        {
+            _ = vm.ConnectSelectedCommand.ExecuteAsync(null);
+        }
+    }
+
     private void OnTreePointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var node = (e.Source as Control)?.DataContext as NodeViewModel;

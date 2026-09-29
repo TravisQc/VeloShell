@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VeloShell.Models;
 using VeloShell.Services;
+using VeloShell.Services.Ssh;
 
 namespace VeloShell.ViewModels;
 
@@ -19,10 +22,16 @@ public partial class MainViewModel : ViewModelBase
     {
         _connections = connections;
         _credentials = credentials;
+        Tabs.Add(new ConnectionDetailTabViewModel(this));
+        SelectedTab = Tabs[0];
         RebuildTree();
     }
 
     public ObservableCollection<NodeViewModel> Nodes { get; } = new();
+
+    public ObservableCollection<ViewModelBase> Tabs { get; } = new();
+
+    [ObservableProperty] private ViewModelBase? _selectedTab;
 
     [ObservableProperty] private NodeViewModel? _selectedNode;
 
@@ -35,7 +44,12 @@ public partial class MainViewModel : ViewModelBase
         : Locked ? "已锁定" : "已解锁";
 
     /// <summary>Wires the dialog service after the owner window exists.</summary>
-    public void AttachDialogs(IDialogService dialogs) => _dialogs = dialogs;
+    public void AttachDialogs(IDialogService dialogs)
+    {
+        _dialogs = dialogs;
+        foreach (var s in Tabs.OfType<SessionViewModel>())
+            s.AttachDialogs(dialogs);
+    }
 
     /// <summary>On launch, if a vault exists, require the master password before showing secrets.</summary>
     public async Task OnStartupAsync()
@@ -124,8 +138,72 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void Lock()
     {
+        _ = CloseAllSessionsAsync();
         _credentials.Lock();
         Locked = _credentials.IsInitialized;
+    }
+
+    [RelayCommand]
+    public async Task ConnectSelectedAsync()
+    {
+        if (SelectedNode is not { IsFolder: false, Connection: { } connection }) return;
+        await OpenSessionAsync(connection);
+    }
+
+    public async Task OpenSessionAsync(Connection connection)
+    {
+        if (!await EnsureCredentialsReadyAsync()) return;
+
+        string? secret = null;
+        try
+        {
+            secret = _credentials.GetSecret(connection.Id);
+        }
+        catch (Exception ex)
+        {
+            if (_dialogs != null)
+                await _dialogs.PromptAsync("凭据读取异常", ex.Message);
+        }
+
+        var session = new SshSession(connection, secret);
+        var collector = new SystemMetricsCollector(session);
+        var sftp = new SftpService(session);
+        var sessionVm = new SessionViewModel(session, collector, sftp, _dialogs);
+
+        if (_dialogs != null)
+            sessionVm.AttachDialogs(_dialogs);
+
+        sessionVm.CloseRequested += (_, _) => CloseTab(sessionVm);
+
+        Tabs.Add(sessionVm);
+        SelectedTab = sessionVm;
+
+        _ = sessionVm.StartAsync();
+    }
+
+    [RelayCommand]
+    public void CloseTab(ViewModelBase tab)
+    {
+        if (tab is SessionViewModel sessionVm)
+        {
+            Tabs.Remove(sessionVm);
+            if (SelectedTab == sessionVm)
+                SelectedTab = Tabs.LastOrDefault();
+
+            _ = sessionVm.DisposeAsync();
+        }
+    }
+
+    public async Task CloseAllSessionsAsync()
+    {
+        var sessions = Tabs.OfType<SessionViewModel>().ToList();
+        foreach (var s in sessions)
+        {
+            Tabs.Remove(s);
+            await s.DisposeAsync();
+        }
+        if (SelectedTab == null || !Tabs.Contains(SelectedTab))
+            SelectedTab = Tabs.FirstOrDefault();
     }
 
     /// <summary>Invoked by the view when a connection node is dropped onto a folder node.</summary>
