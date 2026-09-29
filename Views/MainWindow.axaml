@@ -3,20 +3,61 @@
         xmlns:vm="using:VeloShell.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
         x:Class="VeloShell.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
+        Width="900" Height="600"
         Title="VeloShell">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8" Spacing="6">
+            <Button Content="新建连接" Command="{Binding NewConnectionCommand}" />
+            <Button Content="新建文件夹" Command="{Binding NewFolderCommand}" />
+            <Button Content="编辑" Command="{Binding EditConnectionCommand}" />
+            <Button Content="移动" Command="{Binding MoveSelectedCommand}" />
+            <Button Content="重命名" Command="{Binding RenameFolderCommand}" />
+            <Button Content="删除" Command="{Binding DeleteCommand}" />
+            <Border Width="1" Background="#40808080" Margin="4,2" />
+            <Button Content="更改主密码" Command="{Binding ChangeMasterPasswordCommand}" />
+            <Button Content="锁定" Command="{Binding LockCommand}" />
+        </StackPanel>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+        <Border DockPanel.Dock="Bottom" Padding="10,5" Background="#18808080">
+            <TextBlock Text="{Binding StatusText}" FontSize="12" />
+        </Border>
 
+        <Grid ColumnDefinitions="300,*">
+            <TreeView x:Name="ConnectionTree" Grid.Column="0"
+                      DragDrop.AllowDrop="True"
+                      ItemsSource="{Binding Nodes}"
+                      SelectedItem="{Binding SelectedNode}">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate DataType="vm:NodeViewModel" ItemsSource="{Binding Children}">
+                        <TextBlock Text="{Binding Label}" Padding="2,3" />
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <Border Grid.Column="1" Padding="20" BorderBrush="#20808080" BorderThickness="1,0,0,0">
+                <StackPanel Spacing="10"
+                            IsVisible="{Binding SelectedNode.Connection, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <TextBlock Text="{Binding SelectedNode.Connection.Label}" FontSize="18" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="主机" Foreground="#90808080" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedNode.Connection.Host}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="端口" Foreground="#90808080" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedNode.Connection.Port}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="用户名" Foreground="#90808080" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedNode.Connection.Username}" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="认证方式" Foreground="#90808080" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedNode.Connection.AuthMethod}" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="备注" Foreground="#90808080" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedNode.Connection.Notes}" TextWrapping="Wrap" />
+                    </Grid>
+                    <TextBlock Text="提示:凭据已加密保存,不在此处明文显示。" Foreground="#90808080" FontSize="12" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
 </Window>

@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VeloShell.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="VeloShell.Views.ConnectionEditWindow"
+        x:DataType="vm:ConnectionEditViewModel"
+        Title="{Binding Title}"
+        Width="420" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <StackPanel Margin="20" Spacing="10">
+        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="显示名 (可选)" />
+            <TextBox Text="{Binding DisplayName}" PlaceholderText="未填则显示 user@host:port" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*,Auto,120" ColumnSpacing="8">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="主机 (Host) *" />
+                <TextBox Text="{Binding Host}" PlaceholderText="例如 192.168.1.10" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="4">
+                <TextBlock Text="端口 *" />
+                <TextBox Text="{Binding Port}" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="用户名 *" />
+            <TextBox Text="{Binding Username}" PlaceholderText="例如 root" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="认证方式 *" />
+            <ComboBox ItemsSource="{Binding AuthMethods}"
+                      SelectedItem="{Binding SelectedAuthMethod}"
+                      HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="私钥文件路径" />
+            <TextBox Text="{Binding PrivateKeyPath}" PlaceholderText="密钥认证时填写,例如 ~/.ssh/id_ed25519" />
+        </StackPanel>
+
+        <StackPanel Spacing="4" IsVisible="{Binding NeedsSecret}">
+            <TextBlock Text="密码 / 私钥口令" />
+            <TextBox Text="{Binding Secret}" PasswordChar="●"
+                     PlaceholderText="加密保存;编辑时留空则不修改" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="备注 (可选)" />
+            <TextBox Text="{Binding Notes}" AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBlock IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Text="{Binding Error}" Foreground="#C00000" TextWrapping="Wrap" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,6,0,0">
+            <Button Content="取消" Command="{Binding CancelCommand}" />
+            <Button Content="保存" Command="{Binding SubmitCommand}" IsDefault="True" Classes="accent" />
+        </StackPanel>
+    </StackPanel>
+</Window>

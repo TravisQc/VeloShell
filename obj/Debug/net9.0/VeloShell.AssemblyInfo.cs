@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VeloShell")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ad444a0882b3fde06bd450e2abb794b2519fb8d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9a29ab727342273083014a3e2069217dff88254")]
 [assembly: System.Reflection.AssemblyProductAttribute("VeloShell")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VeloShell")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

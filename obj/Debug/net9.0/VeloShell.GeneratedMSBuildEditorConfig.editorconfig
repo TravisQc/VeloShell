@@ -9,7 +9,7 @@ build_property.AvaloniaNameGeneratorAttachDevTools = true
 build_property.AvaloniaUseCompiledBindingsByDefault = true
 build_property.AvaloniaMainPackageVersion = 12.1.3
 build_property.AvaloniaPreviewerNetCoreToolPath = C:\Users\Travis\.nuget\packages\avalonia\12.1.3\buildTransitive\\..\tools\net8.0\designer\Avalonia.Designer.HostApp.dll
-build_property.AvaloniaResourcePaths = E:\Code\Win32\VeloShell\Assets\avalonia-logo.ico,E:\Code\Win32\VeloShell\App.axaml,E:\Code\Win32\VeloShell\Views\MainWindow.axaml
+build_property.AvaloniaResourcePaths = E:\Code\Win32\VeloShell\Assets\avalonia-logo.ico,E:\Code\Win32\VeloShell\App.axaml,E:\Code\Win32\VeloShell\Views\ConnectionEditWindow.axaml,E:\Code\Win32\VeloShell\Views\MainWindow.axaml,E:\Code\Win32\VeloShell\Views\MasterPasswordWindow.axaml
 build_property.MvvmToolkitEnableINotifyPropertyChangingSupport = true
 build_property._MvvmToolkitIsUsingWindowsRuntimePack = false
 build_property.CsWinRTComponent = 
@@ -33,5 +33,11 @@ build_property.EnableCodeStyleSeverity =
 [E:/Code/Win32/VeloShell/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[E:/Code/Win32/VeloShell/Views/ConnectionEditWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [E:/Code/Win32/VeloShell/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[E:/Code/Win32/VeloShell/Views/MasterPasswordWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
