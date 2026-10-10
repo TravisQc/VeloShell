@@ -2,11 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VeloShell.ViewModels"
              xmlns:views="using:VeloShell.Views"
+             xmlns:controls="using:VeloShell.Controls"
+             xmlns:models="using:VeloShell.Models"
+             xmlns:mi="using:Material.Icons.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
              x:Class="VeloShell.Views.SessionView"
              x:DataType="vm:SessionViewModel">
+
+    <UserControl.Styles>
+        <!-- Flat chevron / toolbar buttons inside the pulse bar -->
+        <Style Selector="Button.pulsetoggle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+        <Style Selector="Button.pulsetoggle:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+        </Style>
+    </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
         <!-- Top Session Status Header -->
@@ -17,7 +33,6 @@
                     <TextBlock Text="{Binding Title}" Classes="subheading" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding Connection.Host, StringFormat='({0})'}" Classes="caption"
                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                    <!-- Status Badge -->
                     <Border CornerRadius="3" Padding="6,2" Background="{DynamicResource SurfaceOverlayBrush}">
                         <TextBlock Text="{Binding StatusText}" Classes="caption"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
@@ -33,18 +48,183 @@
                 </StackPanel>
             </Grid>
         </Border>
+        <!-- Terminal-mode workspace: collapsible pulse bar (row 0) over a
+             terminal | SFTP draggable split (row 1). Replaces the old TabControl. -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*">
 
-        <!-- Main Content Area: TabControl with Terminal, SFTP, and Dashboard -->
-        <TabControl Grid.Row="1" TabStripPlacement="Top">
-            <TabItem Header="交互式终端">
-                <views:TerminalView DataContext="{Binding Terminal}" />
-            </TabItem>
-            <TabItem Header="SFTP 文件">
-                <views:SftpBrowserView DataContext="{Binding Sftp}" />
-            </TabItem>
-            <TabItem Header="性能监控">
-                <views:DashboardView DataContext="{Binding Dashboard}" />
-            </TabItem>
-        </TabControl>
+            <!-- ===== Top pulse monitor bar (spans full workspace width) ===== -->
+            <Border Grid.Row="0" Background="{DynamicResource SurfaceRaisedBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="10,6">
+                <Panel>
+                    <!-- Collapsed: a thin handle keeping a glanceable readout + expand chevron -->
+                    <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !Dashboard.IsMonitorExpanded}">
+                        <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="CPU" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding Dashboard.CpuUsagePercent, StringFormat='{}{0:F0}%'}" Classes="caption" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="内存" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text="{Binding Dashboard.MemoryUsagePercent, StringFormat='{}{0:F0}%'}" Classes="caption" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <mi:MaterialIcon Kind="ArrowDownBold" Width="11" Height="11" VerticalAlignment="Center" Foreground="{DynamicResource StatusInfoBrush}" />
+                                <TextBlock Text="{Binding Dashboard.DownloadRateText}" Classes="caption" />
+                                <mi:MaterialIcon Kind="ArrowUpBold" Width="11" Height="11" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource StatusHealthyBrush}" />
+                                <TextBlock Text="{Binding Dashboard.UploadRateText}" Classes="caption" />
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="pulsetoggle" Command="{Binding Dashboard.ToggleMonitorCommand}" ToolTip.Tip="展开监视条">
+                            <mi:MaterialIcon Kind="ChevronDown" Width="16" Height="16" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Expanded: sparklines + controls, with host / disk detail beneath -->
+                    <StackPanel Spacing="8" IsVisible="{Binding Dashboard.IsMonitorExpanded}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <UniformGrid Grid.Column="0" Columns="3">
+                                <!-- CPU -->
+                                <Border Background="{DynamicResource SurfaceOverlayBrush}" CornerRadius="4" Padding="8,6" Margin="0,0,8,0">
+                                    <ToolTip.Tip>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Dashboard.CpuUsagePercent, StringFormat='CPU 使用率 {0:F1}%'}" Classes="caption" />
+                                            <TextBlock Text="{Binding Dashboard.CpuCoresText}" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                        </StackPanel>
+                                    </ToolTip.Tip>
+                                    <Grid RowDefinitions="Auto,Auto">
+                                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="CPU" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Dashboard.CpuUsagePercent, StringFormat='{}{0:F0}%'}" Classes="body" FontWeight="SemiBold" />
+                                        </Grid>
+                                        <controls:Sparkline Grid.Row="1" Height="28" Margin="0,4,0,0" HorizontalAlignment="Stretch"
+                                                            ItemsSource="{Binding Dashboard.CpuHistory}" Maximum="100"
+                                                            Stroke="{DynamicResource StatusInfoBrush}" Fill="{DynamicResource StatusInfoBrush}" />
+                                    </Grid>
+                                </Border>
+                                <!-- Memory -->
+                                <Border Background="{DynamicResource SurfaceOverlayBrush}" CornerRadius="4" Padding="8,6" Margin="0,0,8,0">
+                                    <ToolTip.Tip>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Dashboard.MemoryText, StringFormat='内存 {0}'}" Classes="caption" />
+                                            <TextBlock Text="{Binding Dashboard.MemoryUsagePercent, StringFormat='占用率 {0:F1}%'}" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                        </StackPanel>
+                                    </ToolTip.Tip>
+                                    <Grid RowDefinitions="Auto,Auto">
+                                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="内存" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Dashboard.MemoryUsagePercent, StringFormat='{}{0:F0}%'}" Classes="body" FontWeight="SemiBold" />
+                                        </Grid>
+                                        <controls:Sparkline Grid.Row="1" Height="28" Margin="0,4,0,0" HorizontalAlignment="Stretch"
+                                                            ItemsSource="{Binding Dashboard.MemoryHistory}" Maximum="100"
+                                                            Stroke="{DynamicResource StatusWarningBrush}" Fill="{DynamicResource StatusWarningBrush}" />
+                                    </Grid>
+                                </Border>
+                                <!-- Network -->
+                                <Border Background="{DynamicResource SurfaceOverlayBrush}" CornerRadius="4" Padding="8,6">
+                                    <ToolTip.Tip>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Dashboard.DownloadRateText, StringFormat='↓ 下行 {0}'}" Classes="caption" />
+                                            <TextBlock Text="{Binding Dashboard.UploadRateText, StringFormat='↑ 上行 {0}'}" Classes="caption" />
+                                            <TextBlock Text="{Binding Dashboard.TotalNetworkText}" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                        </StackPanel>
+                                    </ToolTip.Tip>
+                                    <Grid RowDefinitions="Auto,Auto">
+                                        <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                                            <TextBlock Text="网络" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" HorizontalAlignment="Right">
+                                                <mi:MaterialIcon Kind="ArrowDownBold" Width="11" Height="11" VerticalAlignment="Center" Foreground="{DynamicResource StatusInfoBrush}" />
+                                                <TextBlock Text="{Binding Dashboard.DownloadRateText}" Classes="caption" />
+                                                <mi:MaterialIcon Kind="ArrowUpBold" Width="11" Height="11" Margin="4,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource StatusHealthyBrush}" />
+                                                <TextBlock Text="{Binding Dashboard.UploadRateText}" Classes="caption" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <controls:Sparkline Grid.Row="1" Height="28" Margin="0,4,0,0" HorizontalAlignment="Stretch"
+                                                            ItemsSource="{Binding Dashboard.NetDownHistory}" ItemsSource2="{Binding Dashboard.NetUpHistory}"
+                                                            Stroke="{DynamicResource StatusInfoBrush}" Stroke2="{DynamicResource StatusHealthyBrush}" />
+                                    </Grid>
+                                </Border>
+                            </UniformGrid>
+
+                            <!-- Pulse controls: pause / refresh / collapse -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top" Margin="8,0,0,0">
+                                <Button Content="{Binding Dashboard.PauseResumeButtonText}" Command="{Binding Dashboard.TogglePauseCommand}" FontSize="11" Padding="8,3" VerticalAlignment="Center" />
+                                <Button Content="刷新" Command="{Binding Dashboard.RefreshCommand}" FontSize="11" Padding="8,3" VerticalAlignment="Center" />
+                                <Button Classes="pulsetoggle" Command="{Binding Dashboard.ToggleMonitorCommand}" ToolTip.Tip="折叠监视条" VerticalAlignment="Center">
+                                    <mi:MaterialIcon Kind="ChevronUp" Width="16" Height="16" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Error banner (collection failures) -->
+                        <Border Background="{DynamicResource StatusErrorSoftBrush}" CornerRadius="4" Padding="8,4"
+                                IsVisible="{Binding Dashboard.LastError, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock Text="{Binding Dashboard.LastError, StringFormat='采集异常: {0}'}" Classes="caption" Foreground="{DynamicResource StatusErrorBrush}" />
+                        </Border>
+                        <!-- Detail: host summary + disk partitions (preserved from the old dashboard) -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="主机:" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding Dashboard.Hostname}" Classes="caption" FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="系统:" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding Dashboard.OsVersion}" Classes="caption" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="内核:" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding Dashboard.KernelVersion}" Classes="caption" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="运行:" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding Dashboard.Uptime}" Classes="caption" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="负载:" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding Dashboard.LoadAverage}" Classes="caption" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding Dashboard.Disks}" HorizontalAlignment="Right" Margin="12,0,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:DiskPartitionMetrics">
+                                        <Border Background="{DynamicResource SurfaceOverlayBrush}" CornerRadius="4" Padding="8,4" MinWidth="150">
+                                            <StackPanel Spacing="3">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Text="{Binding MountedOn}" Classes="caption" FontWeight="SemiBold" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding UsagePercent, StringFormat='{}{0:F0}%'}" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                                                </Grid>
+                                                <ProgressBar Value="{Binding UsagePercent}" Minimum="0" Maximum="100" Height="4" CornerRadius="2" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </StackPanel>
+                </Panel>
+            </Border>
+
+            <!-- ===== Terminal | SFTP draggable split (both always visible, neither closable) ===== -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="320" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" MinWidth="280" />
+                </Grid.ColumnDefinitions>
+
+                <views:TerminalView Grid.Column="0" MinWidth="320" DataContext="{Binding Terminal}" />
+
+                <GridSplitter Grid.Column="1" Width="6" ResizeDirection="Columns"
+                              Background="{DynamicResource BorderBrush}" />
+
+                <views:SftpBrowserView Grid.Column="2" MinWidth="280" DataContext="{Binding Sftp}" />
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

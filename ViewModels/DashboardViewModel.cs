@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using VeloShell.Controls;
 using VeloShell.Models;
 using VeloShell.Services.Ssh;
 
@@ -43,6 +44,11 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
     [NotifyPropertyChangedFor(nameof(PauseResumeButtonText))]
     private bool _isPaused;
 
+    // Pulse-bar collapse state. Purely visual and independent of collection:
+    // folding never pauses the collector nor touches IsPaused (see design.md).
+    // Default expanded; each session's dashboard holds its own state.
+    [ObservableProperty] private bool _isMonitorExpanded = true;
+
     [ObservableProperty] private string? _lastError;
     [ObservableProperty] private DateTime? _lastUpdated;
 
@@ -50,9 +56,25 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
 
     public ObservableCollection<DiskPartitionMetrics> Disks { get; } = new();
 
+    // Fixed-capacity rolling history feeding the pulse-bar sparklines. The
+    // collector only exposes the latest snapshot; these retain a short window.
+    // Capacity and cadence of collection are unchanged.
+    private const int HistoryCapacity = 60;
+    public MetricSeries CpuHistory { get; } = new(HistoryCapacity);
+    public MetricSeries MemoryHistory { get; } = new(HistoryCapacity);
+    public MetricSeries NetDownHistory { get; } = new(HistoryCapacity);
+    public MetricSeries NetUpHistory { get; } = new(HistoryCapacity);
+
     public void StartMonitoring()
     {
         _collector.Start();
+    }
+
+    /// <summary>Collapses / expands the pulse bar. Visual only; collection continues.</summary>
+    [RelayCommand]
+    private void ToggleMonitor()
+    {
+        IsMonitorExpanded = !IsMonitorExpanded;
     }
 
     [RelayCommand]
@@ -92,6 +114,12 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
             DownloadRateText = $"{SftpEntryItem.FormatHumanSize((long)m.Network.DownloadBytesPerSec)}/s";
             UploadRateText = $"{SftpEntryItem.FormatHumanSize((long)m.Network.UploadBytesPerSec)}/s";
             TotalNetworkText = $"↓ {SftpEntryItem.FormatHumanSize(m.Network.TotalReceivedBytes)}  ↑ {SftpEntryItem.FormatHumanSize(m.Network.TotalTransmittedBytes)}";
+
+            // Append to the rolling history windows driving the sparklines.
+            CpuHistory.Add(m.Cpu.UsagePercent);
+            MemoryHistory.Add(m.Memory.UsagePercent);
+            NetDownHistory.Add(m.Network.DownloadBytesPerSec);
+            NetUpHistory.Add(m.Network.UploadBytesPerSec);
 
             if (!string.IsNullOrWhiteSpace(m.Host.Hostname))
                 Hostname = m.Host.Hostname;
