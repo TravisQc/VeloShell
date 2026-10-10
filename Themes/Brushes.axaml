@@ -1,0 +1,45 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Semantic brush tokens. Views consume ONLY these (via DynamicResource),
+        never the raw Colors above. Color references use DynamicResource so the
+        palette resolves across the merged dictionary tree regardless of order.
+    -->
+
+    <!-- Surfaces -->
+    <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="{DynamicResource SpaceBase}" />
+    <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="{DynamicResource SpaceRaised}" />
+    <SolidColorBrush x:Key="SurfaceOverlayBrush" Color="{DynamicResource SpaceOverlay}" />
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="{DynamicResource SpaceHover}" />
+
+    <!-- Main window deep-space gradient -->
+    <LinearGradientBrush x:Key="WindowBackgroundBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="{DynamicResource SpaceGradientTop}" />
+        <GradientStop Offset="0.55" Color="{DynamicResource SpaceGradientMid}" />
+        <GradientStop Offset="1" Color="{DynamicResource SpaceGradientBottom}" />
+    </LinearGradientBrush>
+
+    <!-- Accent -->
+    <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentLightBrush" Color="{DynamicResource AccentColorLight}" />
+    <SolidColorBrush x:Key="AccentDarkBrush" Color="{DynamicResource AccentColorDark}" />
+
+    <!-- Borders / dividers -->
+    <SolidColorBrush x:Key="BorderBrush" Color="{DynamicResource BorderColor}" />
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="{DynamicResource BorderStrongColor}" />
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{DynamicResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{DynamicResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{DynamicResource TextMutedColor}" />
+
+    <!-- Status (solid) -->
+    <SolidColorBrush x:Key="StatusHealthyBrush" Color="{DynamicResource StatusHealthyColor}" />
+    <SolidColorBrush x:Key="StatusWarningBrush" Color="{DynamicResource StatusWarningColor}" />
+    <SolidColorBrush x:Key="StatusErrorBrush" Color="{DynamicResource StatusErrorColor}" />
+    <SolidColorBrush x:Key="StatusInfoBrush" Color="{DynamicResource StatusInfoColor}" />
+
+    <!-- Status (soft fills for banners) -->
+    <SolidColorBrush x:Key="StatusErrorSoftBrush" Color="{DynamicResource StatusErrorColor}" Opacity="0.16" />
+    <SolidColorBrush x:Key="StatusHealthySoftBrush" Color="{DynamicResource StatusHealthyColor}" Opacity="0.16" />
+</ResourceDictionary>

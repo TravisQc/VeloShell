@@ -28,13 +28,60 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
     [NotifyPropertyChangedFor(nameof(IsConnected))]
     [NotifyPropertyChangedFor(nameof(IsConnecting))]
     [NotifyPropertyChangedFor(nameof(IsDisconnectedOrError))]
+    [NotifyPropertyChangedFor(nameof(Health))]
+    [NotifyPropertyChangedFor(nameof(IsHealthy))]
+    [NotifyPropertyChangedFor(nameof(IsWarning))]
+    [NotifyPropertyChangedFor(nameof(IsError))]
+    [NotifyPropertyChangedFor(nameof(IsBreathing))]
     private SessionState _state = SessionState.Disconnected;
 
     [ObservableProperty] private string? _errorMessage;
 
+    // Per-session navigation mode (left rail). Defaults to Terminal; kept per session.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTerminalMode))]
+    [NotifyPropertyChangedFor(nameof(IsHostMode))]
+    [NotifyPropertyChangedFor(nameof(IsSettingsMode))]
+    private SessionMode _currentMode = SessionMode.Terminal;
+
+    // "Connected but degraded" input point (high load / packet loss). The signal
+    // source is out of scope for this layer; when set true a connected session
+    // classifies as Warning. Lights up once a later change supplies the signal.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Health))]
+    [NotifyPropertyChangedFor(nameof(IsHealthy))]
+    [NotifyPropertyChangedFor(nameof(IsWarning))]
+    [NotifyPropertyChangedFor(nameof(IsError))]
+    private bool _isDegraded;
+
     public bool IsConnected => State == SessionState.Connected;
     public bool IsConnecting => State == SessionState.Connecting;
     public bool IsDisconnectedOrError => State is SessionState.Disconnected or SessionState.Error;
+
+    public bool IsTerminalMode => CurrentMode == SessionMode.Terminal;
+    public bool IsHostMode => CurrentMode == SessionMode.Host;
+    public bool IsSettingsMode => CurrentMode == SessionMode.Settings;
+
+    /// <summary>
+    /// Health classification driving the tab status dot. A connected session is
+    /// Healthy (or Warning when degraded); every other state is Error. Connecting
+    /// and Disconnecting are transitional and classify as Error (red, no breathing).
+    /// </summary>
+    public SessionHealth Health => State == SessionState.Connected
+        ? (IsDegraded ? SessionHealth.Warning : SessionHealth.Healthy)
+        : SessionHealth.Error;
+
+    public bool IsHealthy => Health == SessionHealth.Healthy;
+    public bool IsWarning => Health == SessionHealth.Warning;
+    public bool IsError => Health == SessionHealth.Error;
+
+    // The dot "breathes" only while the session is alive (connected).
+    public bool IsBreathing => State == SessionState.Connected;
+
+    // Status-bar fields with no data source yet; reserved so the slots light up
+    // once a later change supplies them (graceful degradation: null = hidden).
+    public string? Latency => null;
+    public string? Encoding => null;
 
     public string StatusText => State switch
     {
@@ -108,6 +155,13 @@ public partial class SessionViewModel : ViewModelBase, IAsyncDisposable, IDispos
     private void Close()
     {
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Switches this session's current navigation mode (left rail).</summary>
+    [RelayCommand]
+    private void SetMode(SessionMode mode)
+    {
+        CurrentMode = mode;
     }
 
     private void OnSessionStateChanged(object? sender, SessionState newState)

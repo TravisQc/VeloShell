@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Typographic scale. Views apply a role via Classes (heading/subheading/
+        body/caption/mono) or reference these size/family tokens directly with
+        DynamicResource instead of hand-setting FontSize per control.
+    -->
+
+    <x:Double x:Key="FontSizeHeading">20</x:Double>
+    <x:Double x:Key="FontSizeSubheading">15</x:Double>
+    <x:Double x:Key="FontSizeBody">13</x:Double>
+    <x:Double x:Key="FontSizeCaption">11</x:Double>
+
+    <FontFamily x:Key="MonospaceFontFamily">Cascadia Mono,Consolas,Menlo,monospace</FontFamily>
+</ResourceDictionary>

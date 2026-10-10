@@ -186,3 +186,5 @@ E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Renci.SshNet.dll
 E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\NeoSmart.Unicode.dll
 E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Wcwidth.dll
 E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\XTerm.NET.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Material.Icons.dll
+E:\Code\Win32\VeloShell\VeloShell.Tests\bin\Debug\net9.0\Material.Icons.Avalonia.dll

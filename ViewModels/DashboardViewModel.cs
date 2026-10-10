@@ -34,6 +34,7 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
     [ObservableProperty] private string _totalNetworkText = "0 B / 0 B";
 
     [ObservableProperty] private string _hostname = "-";
+    [ObservableProperty] private string _osVersion = "-";
     [ObservableProperty] private string _kernelVersion = "-";
     [ObservableProperty] private string _uptime = "-";
     [ObservableProperty] private string _loadAverage = "-";
@@ -94,6 +95,8 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
 
             if (!string.IsNullOrWhiteSpace(m.Host.Hostname))
                 Hostname = m.Host.Hostname;
+            if (!string.IsNullOrWhiteSpace(m.Host.OsVersion))
+                OsVersion = m.Host.OsVersion;
             if (!string.IsNullOrWhiteSpace(m.Host.KernelVersion))
                 KernelVersion = m.Host.KernelVersion;
             if (!string.IsNullOrWhiteSpace(m.Host.Uptime))

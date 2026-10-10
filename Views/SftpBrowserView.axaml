@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VeloShell.ViewModels"
              xmlns:models="using:VeloShell.Models"
+             xmlns:mi="using:Material.Icons.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
@@ -10,12 +11,22 @@
 
     <DockPanel Margin="4">
         <!-- Top Toolbar -->
-        <Border DockPanel.Dock="Top" Background="#10808080" CornerRadius="4" Padding="8" Margin="0,0,0,6">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceRaisedBrush}" CornerRadius="4" Padding="8" Margin="0,0,0,6">
             <StackPanel Spacing="8">
                 <!-- Row 1: Path navigation -->
                 <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                    <Button Grid.Column="0" Content="⬆ 上一级" Command="{Binding NavigateUpCommand}" Margin="0,0,6,0" Padding="8,4" />
-                    <Button Grid.Column="1" Content="🔄 刷新" Command="{Binding RefreshCommand}" Margin="0,0,6,0" Padding="8,4" />
+                    <Button Grid.Column="0" Command="{Binding NavigateUpCommand}" Margin="0,0,6,0" Padding="8,4">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="ArrowUpBold" Width="14" Height="14" />
+                            <TextBlock Text="上一级" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="1" Command="{Binding RefreshCommand}" Margin="0,0,6,0" Padding="8,4">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="Refresh" Width="14" Height="14" />
+                            <TextBlock Text="刷新" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                     <TextBox Grid.Column="2" Text="{Binding PathInput, Mode=TwoWay}"
                              PlaceholderText="输入路径并按回车前往..."
                              VerticalAlignment="Center" Margin="0,0,6,0">
@@ -28,14 +39,29 @@
 
                 <!-- Row 2: File operations & options -->
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="➕ 新建文件夹" Command="{Binding NewFolderCommand}" Padding="8,3" FontSize="12" />
-                    <Button Content="✏️ 重命名" Command="{Binding RenameSelectedCommand}"
+                    <Button Command="{Binding NewFolderCommand}" Padding="8,3">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="FolderPlusOutline" Width="14" Height="14" />
+                            <TextBlock Text="新建文件夹" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding RenameSelectedCommand}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            Padding="8,3" FontSize="12" />
-                    <Button Content="🗑️ 删除" Command="{Binding DeleteSelectedCommand}"
+                            Padding="8,3">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="PencilOutline" Width="14" Height="14" />
+                            <TextBlock Text="重命名" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DeleteSelectedCommand}"
                             IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            Padding="8,3" FontSize="12" />
-                    <Border Width="1" Background="#30808080" Margin="4,2" />
+                            Padding="8,3">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="{DynamicResource StatusErrorBrush}" />
+                            <TextBlock Text="删除" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Border Width="1" Background="{DynamicResource BorderBrush}" Margin="4,2" />
                     <CheckBox Content="显示隐藏文件" IsChecked="{Binding ShowHiddenFiles}"
                               Command="{Binding ToggleHiddenFilesCommand}" FontSize="12" VerticalAlignment="Center" />
                     <ProgressBar IsIndeterminate="True" Width="80" Height="4" VerticalAlignment="Center"
@@ -45,26 +71,41 @@
         </Border>
 
         <!-- Error Notification -->
-        <Border DockPanel.Dock="Top" Background="#33FF4444" CornerRadius="4" Padding="8,4" Margin="0,0,0,6"
+        <Border DockPanel.Dock="Top" Background="{DynamicResource StatusErrorSoftBrush}" CornerRadius="4" Padding="8,4" Margin="0,0,0,6"
                 IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6666" FontSize="12" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" Classes="caption" Foreground="{DynamicResource StatusErrorBrush}" TextWrapping="Wrap" />
         </Border>
 
         <!-- File List Header -->
-        <Border DockPanel.Dock="Top" Background="#18808080" Padding="10,6" CornerRadius="4,4,0,0">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceOverlayBrush}" Padding="10,6" CornerRadius="4,4,0,0">
             <Grid ColumnDefinitions="*,120,110,160">
-                <Button Grid.Column="0" Content="名称 ⬍" Command="{Binding SortCommand}" CommandParameter="Name"
-                        Background="Transparent" BorderThickness="0" Padding="0" FontWeight="SemiBold" FontSize="12" />
-                <Button Grid.Column="1" Content="大小 ⬍" Command="{Binding SortCommand}" CommandParameter="Size"
-                        Background="Transparent" BorderThickness="0" Padding="0" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right" />
-                <TextBlock Grid.Column="2" Text="权限" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center" />
-                <Button Grid.Column="3" Content="修改时间 ⬍" Command="{Binding SortCommand}" CommandParameter="ModifiedTime"
-                        Background="Transparent" BorderThickness="0" Padding="0" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right" />
+                <Button Grid.Column="0" Command="{Binding SortCommand}" CommandParameter="Name"
+                        Background="Transparent" BorderThickness="0" Padding="0">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="名称" Classes="caption" FontWeight="SemiBold" />
+                        <mi:MaterialIcon Kind="UnfoldMoreHorizontal" Width="12" Height="12" Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Command="{Binding SortCommand}" CommandParameter="Size"
+                        Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="大小" Classes="caption" FontWeight="SemiBold" />
+                        <mi:MaterialIcon Kind="UnfoldMoreHorizontal" Width="12" Height="12" Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </Button>
+                <TextBlock Grid.Column="2" Text="权限" Classes="caption" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                <Button Grid.Column="3" Command="{Binding SortCommand}" CommandParameter="ModifiedTime"
+                        Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="修改时间" Classes="caption" FontWeight="SemiBold" />
+                        <mi:MaterialIcon Kind="UnfoldMoreHorizontal" Width="12" Height="12" Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
 
         <!-- File List Content -->
-        <Border BorderBrush="#18808080" BorderThickness="1,0,1,1" CornerRadius="0,0,4,4">
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" CornerRadius="0,0,4,4">
             <ListBox ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedItem}"
                      DoubleTapped="OnItemDoubleTapped"
@@ -73,18 +114,18 @@
                     <DataTemplate x:DataType="models:SftpEntryItem">
                         <Grid ColumnDefinitions="*,120,110,160" VerticalAlignment="Center">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{Binding IsDirectory, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                           IsVisible="False" />
-                                <TextBlock Text="📁" IsVisible="{Binding IsDirectory}" FontSize="13" />
-                                <TextBlock Text="📄" IsVisible="{Binding !IsDirectory}" FontSize="13" />
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                <mi:MaterialIcon Kind="Folder" IsVisible="{Binding IsDirectory}" Width="16" Height="16"
+                                                 Foreground="{DynamicResource AccentLightBrush}" VerticalAlignment="Center" />
+                                <mi:MaterialIcon Kind="FileOutline" IsVisible="{Binding !IsDirectory}" Width="16" Height="16"
+                                                 Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" Classes="body" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding HumanSize}" HorizontalAlignment="Right"
-                                       Foreground="#808080" FontSize="12" VerticalAlignment="Center" />
+                                       Classes="caption" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="2" Text="{Binding Permissions}" HorizontalAlignment="Center"
-                                       FontFamily="Consolas,Menlo,monospace" Foreground="#808080" FontSize="11" VerticalAlignment="Center" />
+                                       Classes="mono" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="3" Text="{Binding LastWriteTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
-                                       HorizontalAlignment="Right" Foreground="#808080" FontSize="12" VerticalAlignment="Center" />
+                                       HorizontalAlignment="Right" Classes="caption" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

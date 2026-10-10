@@ -2,14 +2,65 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="VeloShell.App"
              xmlns:local="using:VeloShell"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             xmlns:materialIcons="using:Material.Icons.Avalonia"
+             RequestedThemeVariant="Dark">
+             <!-- Single dark "deep-space" baseline (see visual-design-system). -->
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://VeloShell/Themes/Colors.axaml" />
+                <ResourceInclude Source="avares://VeloShell/Themes/Brushes.axaml" />
+                <ResourceInclude Source="avares://VeloShell/Themes/Typography.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+        <materialIcons:MaterialIconStyles />
+
+        <!-- Typographic scale roles (visual-design-system) -->
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeHeading}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.subheading">
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeSubheading}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.body">
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.caption">
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.mono">
+            <Setter Property="FontFamily" Value="{DynamicResource MonospaceFontFamily}" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+
+        <!-- Breathing status dot (app-shell): pulses while a session is alive -->
+        <Style Selector="Ellipse.breathing">
+            <Style.Animations>
+                <Animation Duration="0:0:1.8" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="0.3" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
     </Application.Styles>
 </Application>

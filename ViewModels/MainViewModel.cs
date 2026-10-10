@@ -22,18 +22,31 @@ public partial class MainViewModel : ViewModelBase
     {
         _connections = connections;
         _credentials = credentials;
-        Tabs.Add(new ConnectionDetailTabViewModel(this));
-        SelectedTab = Tabs[0];
+        Launcher = new LauncherViewModel(this);
         RebuildTree();
     }
 
     public ObservableCollection<NodeViewModel> Nodes { get; } = new();
 
-    public ObservableCollection<ViewModelBase> Tabs { get; } = new();
+    /// <summary>Open sessions, rendered as the title-bar tabs. The launcher is not a member.</summary>
+    public ObservableCollection<SessionViewModel> Sessions { get; } = new();
 
-    [ObservableProperty] private ViewModelBase? _selectedTab;
+    /// <summary>The launcher surface (connection tree + management actions). Not a session tab.</summary>
+    public LauncherViewModel Launcher { get; }
+
+    /// <summary>
+    /// The currently selected session, or null when the launcher is shown.
+    /// A null active session is the signal that the shell is showing the launcher.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLauncherVisible))]
+    [NotifyPropertyChangedFor(nameof(HasActiveSession))]
+    private SessionViewModel? _activeSession;
 
     [ObservableProperty] private NodeViewModel? _selectedNode;
+
+    public bool IsLauncherVisible => ActiveSession is null;
+    public bool HasActiveSession => ActiveSession is not null;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
@@ -43,11 +56,26 @@ public partial class MainViewModel : ViewModelBase
         ? "尚未设置主密码"
         : Locked ? "已锁定" : "已解锁";
 
+    /// <summary>Shows the launcher surface (clears the active session) — the [+] action.</summary>
+    [RelayCommand]
+    private void ShowLauncher()
+    {
+        ActiveSession = null;
+    }
+
+    /// <summary>Makes a session the active tab, hiding the launcher.</summary>
+    [RelayCommand]
+    private void ActivateSession(SessionViewModel session)
+    {
+        if (Sessions.Contains(session))
+            ActiveSession = session;
+    }
+
     /// <summary>Wires the dialog service after the owner window exists.</summary>
     public void AttachDialogs(IDialogService dialogs)
     {
         _dialogs = dialogs;
-        foreach (var s in Tabs.OfType<SessionViewModel>())
+        foreach (var s in Sessions)
             s.AttachDialogs(dialogs);
     }
 
@@ -175,35 +203,31 @@ public partial class MainViewModel : ViewModelBase
 
         sessionVm.CloseRequested += (_, _) => CloseTab(sessionVm);
 
-        Tabs.Add(sessionVm);
-        SelectedTab = sessionVm;
+        Sessions.Add(sessionVm);
+        ActiveSession = sessionVm;
 
         _ = sessionVm.StartAsync();
     }
 
     [RelayCommand]
-    public void CloseTab(ViewModelBase tab)
+    public void CloseTab(SessionViewModel sessionVm)
     {
-        if (tab is SessionViewModel sessionVm)
-        {
-            Tabs.Remove(sessionVm);
-            if (SelectedTab == sessionVm)
-                SelectedTab = Tabs.LastOrDefault();
+        if (!Sessions.Remove(sessionVm))
+            return;
 
-            _ = sessionVm.DisposeAsync();
-        }
+        if (ActiveSession == sessionVm)
+            ActiveSession = Sessions.LastOrDefault();
+
+        _ = sessionVm.DisposeAsync();
     }
 
     public async Task CloseAllSessionsAsync()
     {
-        var sessions = Tabs.OfType<SessionViewModel>().ToList();
+        var sessions = Sessions.ToList();
+        Sessions.Clear();
+        ActiveSession = null;
         foreach (var s in sessions)
-        {
-            Tabs.Remove(s);
             await s.DisposeAsync();
-        }
-        if (SelectedTab == null || !Tabs.Contains(SelectedTab))
-            SelectedTab = Tabs.FirstOrDefault();
     }
 
     /// <summary>Invoked by the view when a connection node is dropped onto a folder node.</summary>

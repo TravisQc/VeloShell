@@ -1,6 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:VeloShell.ViewModels"
+        xmlns:models="using:VeloShell.Models"
+        xmlns:conv="using:VeloShell.Converters"
+        xmlns:mi="using:Material.Icons.Avalonia"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
@@ -8,70 +11,232 @@
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Width="1000" Height="650"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="BorderOnly"
         Title="VeloShell">
 
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8" Spacing="6">
-            <Button Content="🚀 连接" Command="{Binding ConnectSelectedCommand}"
-                    IsEnabled="{Binding SelectedNode.Connection, Converter={x:Static ObjectConverters.IsNotNull}}"
-                    FontWeight="SemiBold" />
-            <Border Width="1" Background="#40808080" Margin="2,2" />
-            <Button Content="新建连接" Command="{Binding NewConnectionCommand}" />
-            <Button Content="新建文件夹" Command="{Binding NewFolderCommand}" />
-            <Button Content="编辑" Command="{Binding EditConnectionCommand}" />
-            <Button Content="移动" Command="{Binding MoveSelectedCommand}" />
-            <Button Content="重命名" Command="{Binding RenameFolderCommand}" />
-            <Button Content="删除" Command="{Binding DeleteCommand}" />
-            <Border Width="1" Background="#40808080" Margin="4,2" />
-            <Button Content="更改主密码" Command="{Binding ChangeMasterPasswordCommand}" />
-            <Button Content="锁定" Command="{Binding LockCommand}" />
-        </StackPanel>
+    <Window.Styles>
+        <!-- Title-bar tab strip: flat, selection highlighted via accent underline -->
+        <Style Selector="ListBox.tabstrip">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox.tabstrip ListBoxItem">
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+        </Style>
+        <Style Selector="ListBox.tabstrip ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource SurfaceOverlayBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+        </Style>
 
-        <Border DockPanel.Dock="Bottom" Padding="10,5" Background="#18808080">
-            <TextBlock Text="{Binding StatusText}" FontSize="12" />
+        <!-- Window control buttons -->
+        <Style Selector="Button.chrome">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+        <Style Selector="Button.chrome:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+        </Style>
+        <Style Selector="Button.chromeclose:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource StatusErrorBrush}" />
+        </Style>
+
+        <!-- Left mode rail buttons -->
+        <Style Selector="Button.railbtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="2,0,0,0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Width" Value="48" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.railbtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceOverlayBrush}" />
+        </Style>
+        <Style Selector="Button.railbtn.active">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceOverlayBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- ===== CSD Title Bar ===== -->
+        <Border Grid.Row="0" x:Name="TitleBar" Background="{DynamicResource SurfaceBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                PointerPressed="OnTitleBarPressed">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <!-- Brand -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0" VerticalAlignment="Center">
+                    <mi:MaterialIcon Kind="Terminal" Width="18" Height="18" Foreground="{DynamicResource AccentBrush}" />
+                    <TextBlock Text="VeloShell" Classes="body" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Session tabs + launcher button -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
+                    <ListBox Classes="tabstrip"
+                             ItemsSource="{Binding Sessions}"
+                             SelectedItem="{Binding ActiveSession, Mode=TwoWay}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SessionViewModel">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <!-- Per-session breathing status dot -->
+                                    <Panel Width="8" Height="8" VerticalAlignment="Center">
+                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusHealthyBrush}"
+                                                 IsVisible="{Binding IsHealthy}" Classes.breathing="{Binding IsBreathing}" />
+                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusWarningBrush}"
+                                                 IsVisible="{Binding IsWarning}" Classes.breathing="{Binding IsBreathing}" />
+                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusErrorBrush}"
+                                                 IsVisible="{Binding IsError}" />
+                                    </Panel>
+                                    <TextBlock Text="{Binding Title}" Classes="body" VerticalAlignment="Center" />
+                                    <Button Command="{Binding CloseCommand}"
+                                            Background="Transparent" BorderThickness="0" Padding="2" Margin="2,0,0,0"
+                                            VerticalAlignment="Center">
+                                        <mi:MaterialIcon Kind="Close" Width="11" Height="11" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Button Command="{Binding ShowLauncherCommand}" ToolTip.Tip="打开启动器"
+                            Background="Transparent" BorderThickness="0" Width="36" Height="36" Padding="0"
+                            VerticalAlignment="Center">
+                        <mi:MaterialIcon Kind="Plus" Width="18" Height="18" />
+                    </Button>
+                </StackPanel>
+
+                <!-- Draggable spacer -->
+                <Border Grid.Column="2" Background="Transparent" />
+
+                <!-- Window controls -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Classes="chrome" Click="OnMinimize" ToolTip.Tip="最小化">
+                        <mi:MaterialIcon Kind="WindowMinimize" Width="14" Height="14" />
+                    </Button>
+                    <Button Classes="chrome" Click="OnMaximizeRestore" ToolTip.Tip="最大化/还原">
+                        <mi:MaterialIcon Kind="WindowMaximize" Width="14" Height="14" />
+                    </Button>
+                    <Button Classes="chrome chromeclose" Click="OnClose" ToolTip.Tip="关闭">
+                        <mi:MaterialIcon Kind="WindowClose" Width="14" Height="14" />
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <Grid ColumnDefinitions="280,4,*">
-            <TreeView x:Name="ConnectionTree" Grid.Column="0"
-                      DragDrop.AllowDrop="True"
-                      ItemsSource="{Binding Nodes}"
-                      SelectedItem="{Binding SelectedNode}"
-                      DoubleTapped="OnTreeDoubleTapped">
-                <TreeView.ItemTemplate>
-                    <TreeDataTemplate DataType="vm:NodeViewModel" ItemsSource="{Binding Children}">
-                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="2,3">
-                            <TextBlock Text="📁" IsVisible="{Binding IsFolder}" FontSize="12" />
-                            <TextBlock Text="🖥️" IsVisible="{Binding !IsFolder}" FontSize="12" />
-                            <TextBlock Text="{Binding Label}" />
-                        </StackPanel>
-                    </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+        <!-- ===== Body: mode rail + content ===== -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+            <!-- Left mode rail (per active session) -->
+            <Border Grid.Column="0" Background="{DynamicResource SurfaceBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0"
+                    IsVisible="{Binding HasActiveSession}">
+                <StackPanel Orientation="Vertical" Spacing="4" Margin="0,8">
+                    <Button Classes="railbtn" Classes.active="{Binding ActiveSession.IsTerminalMode}"
+                            Command="{Binding ActiveSession.SetModeCommand}"
+                            CommandParameter="{x:Static models:SessionMode.Terminal}" ToolTip.Tip="终端">
+                        <mi:MaterialIcon Kind="Console" Width="22" Height="22" />
+                    </Button>
+                    <Button Classes="railbtn" Classes.active="{Binding ActiveSession.IsHostMode}"
+                            Command="{Binding ActiveSession.SetModeCommand}"
+                            CommandParameter="{x:Static models:SessionMode.Host}" ToolTip.Tip="主机">
+                        <mi:MaterialIcon Kind="Server" Width="22" Height="22" />
+                    </Button>
+                    <Button Classes="railbtn" Classes.active="{Binding ActiveSession.IsSettingsMode}"
+                            Command="{Binding ActiveSession.SetModeCommand}"
+                            CommandParameter="{x:Static models:SessionMode.Settings}" ToolTip.Tip="设置">
+                        <mi:MaterialIcon Kind="Cog" Width="22" Height="22" />
+                    </Button>
+                </StackPanel>
+            </Border>
 
-            <GridSplitter Grid.Column="1" Background="#20808080" ResizeDirection="Columns" />
+            <!-- Content surfaces -->
+            <Panel Grid.Column="1">
+                <!-- Launcher -->
+                <ContentControl Content="{Binding Launcher}" IsVisible="{Binding IsLauncherVisible}" />
 
-            <TabControl Grid.Column="2"
-                        ItemsSource="{Binding Tabs}"
-                        SelectedItem="{Binding SelectedTab}">
-                <TabControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ViewModelBase">
-                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Header}" VerticalAlignment="Center" />
-                            <Button Content="✕"
-                                    Command="{Binding ((vm:MainViewModel)DataContext).CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                    CommandParameter="{Binding}"
-                                    IsVisible="{Binding CanClose}"
-                                    Background="Transparent" BorderThickness="0"
-                                    Padding="2" Margin="4,0,0,0" FontSize="10" />
+                <!-- Active-session surfaces. Guarded by HasActiveSession so the per-mode
+                     bindings never resolve against a null ActiveSession (which would
+                     otherwise leave IsVisible at its default 'true' and overlap). -->
+                <Panel IsVisible="{Binding HasActiveSession}">
+                    <!-- Terminal mode -->
+                    <ContentControl Content="{Binding ActiveSession}" IsVisible="{Binding ActiveSession.IsTerminalMode}" />
+
+                    <!-- Host mode (content provided by later changes) -->
+                    <Border IsVisible="{Binding ActiveSession.IsHostMode}" Padding="24">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+                            <mi:MaterialIcon Kind="ServerNetwork" Width="40" Height="40" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="主机工具" Classes="subheading" HorizontalAlignment="Center" />
+                            <TextBlock Text="网络诊断与进程管理即将在后续版本提供。" Classes="caption"
+                                       Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
-                    </DataTemplate>
-                </TabControl.ItemTemplate>
-                <TabControl.ContentTemplate>
-                    <DataTemplate>
-                        <ContentControl Content="{Binding}" />
-                    </DataTemplate>
-                </TabControl.ContentTemplate>
-            </TabControl>
+                    </Border>
+
+                    <!-- Settings mode (content provided by later changes) -->
+                    <Border IsVisible="{Binding ActiveSession.IsSettingsMode}" Padding="24">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+                            <mi:MaterialIcon Kind="Cog" Width="40" Height="40" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="设置" Classes="subheading" HorizontalAlignment="Center" />
+                            <TextBlock Text="偏好设置即将在后续版本提供。" Classes="caption"
+                                       Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Panel>
+            </Panel>
         </Grid>
-    </DockPanel>
+
+        <!-- ===== Bottom status bar ===== -->
+        <Border Grid.Row="2" Padding="12,5" Background="{DynamicResource SurfaceRaisedBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Active session context -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center"
+                            IsVisible="{Binding HasActiveSession}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Panel Width="8" Height="8" VerticalAlignment="Center">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusHealthyBrush}" IsVisible="{Binding ActiveSession.IsHealthy}" />
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusWarningBrush}" IsVisible="{Binding ActiveSession.IsWarning}" />
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource StatusErrorBrush}" IsVisible="{Binding ActiveSession.IsError}" />
+                        </Panel>
+                        <TextBlock Text="{Binding ActiveSession.StatusText}" Classes="caption" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding ActiveSession.Dashboard.OsVersion}" Classes="caption"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"
+                               IsVisible="{Binding ActiveSession.Dashboard.OsVersion, Converter={x:Static conv:AppConverters.MeaningfulText}}" />
+                    <TextBlock Text="{Binding ActiveSession.Dashboard.KernelVersion, StringFormat='内核 {0}'}" Classes="caption"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"
+                               IsVisible="{Binding ActiveSession.Dashboard.KernelVersion, Converter={x:Static conv:AppConverters.MeaningfulText}}" />
+                    <!-- Reserved: latency / encoding (hidden until a data source exists) -->
+                    <TextBlock Text="{Binding ActiveSession.Latency, StringFormat='延迟 {0}'}" Classes="caption"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"
+                               IsVisible="{Binding ActiveSession.Latency, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <TextBlock Text="{Binding ActiveSession.Encoding, StringFormat='编码 {0}'}" Classes="caption"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"
+                               IsVisible="{Binding ActiveSession.Encoding, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </StackPanel>
+
+                <!-- App-level context (launcher / no active session) -->
+                <TextBlock Grid.Column="0" Text="{Binding StatusText}" Classes="caption" VerticalAlignment="Center"
+                           IsVisible="{Binding IsLauncherVisible}" />
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VeloShell.ViewModels"
+             xmlns:mi="using:Material.Icons.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="VeloShell.Views.LauncherView"
+             x:DataType="vm:LauncherViewModel">
+
+    <Grid ColumnDefinitions="320,*" Background="Transparent">
+        <!-- Left: management actions + connection tree -->
+        <DockPanel Grid.Column="0" Margin="12">
+            <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+                <TextBlock Text="连接" Classes="heading" />
+                <WrapPanel Orientation="Horizontal">
+                    <Button Command="{Binding Main.NewConnectionCommand}" Margin="0,0,6,6">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="PlusCircleOutline" Width="14" Height="14" Foreground="{DynamicResource AccentBrush}" />
+                            <TextBlock Text="新建连接" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding Main.NewFolderCommand}" Margin="0,0,6,6">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mi:MaterialIcon Kind="FolderPlusOutline" Width="14" Height="14" />
+                            <TextBlock Text="新建文件夹" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Content="编辑" Command="{Binding Main.EditConnectionCommand}" Margin="0,0,6,6" />
+                    <Button Content="移动" Command="{Binding Main.MoveSelectedCommand}" Margin="0,0,6,6" />
+                    <Button Content="重命名" Command="{Binding Main.RenameFolderCommand}" Margin="0,0,6,6" />
+                    <Button Content="删除" Command="{Binding Main.DeleteCommand}" Margin="0,0,6,6" />
+                    <Button Content="更改主密码" Command="{Binding Main.ChangeMasterPasswordCommand}" Margin="0,0,6,6" />
+                    <Button Content="锁定" Command="{Binding Main.LockCommand}" Margin="0,0,6,6" />
+                </WrapPanel>
+            </StackPanel>
+
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4"
+                    Background="{DynamicResource SurfaceRaisedBrush}">
+                <TreeView x:Name="ConnectionTree"
+                          DragDrop.AllowDrop="True"
+                          Background="Transparent"
+                          ItemsSource="{Binding Main.Nodes}"
+                          SelectedItem="{Binding Main.SelectedNode}"
+                          DoubleTapped="OnTreeDoubleTapped">
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate DataType="vm:NodeViewModel" ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="2,3">
+                                <mi:MaterialIcon Kind="Folder" IsVisible="{Binding IsFolder}" Width="16" Height="16"
+                                                 Foreground="{DynamicResource AccentLightBrush}" />
+                                <mi:MaterialIcon Kind="Server" IsVisible="{Binding !IsFolder}" Width="16" Height="16"
+                                                 Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+        </DockPanel>
+
+        <!-- Right: selected connection detail + launch -->
+        <Border Grid.Column="1" Padding="24" Background="Transparent">
+            <StackPanel Spacing="16"
+                        IsVisible="{Binding Main.SelectedNode.Connection, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Main.SelectedNode.Connection.Label}" Classes="heading" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Command="{Binding Main.ConnectSelectedCommand}" FontWeight="Bold" Padding="14,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mi:MaterialIcon Kind="RocketLaunchOutline" Width="16" Height="16" Foreground="{DynamicResource AccentBrush}" />
+                            <TextBlock Text="发起连接" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <Border Height="1" Background="{DynamicResource BorderBrush}" />
+
+                <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="主机" Classes="body" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Main.SelectedNode.Connection.Host}" Classes="body" VerticalAlignment="Center" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="端口" Classes="body" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Main.SelectedNode.Connection.Port}" Classes="body" VerticalAlignment="Center" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="用户名" Classes="body" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Main.SelectedNode.Connection.Username}" Classes="body" VerticalAlignment="Center" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="认证方式" Classes="body" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Main.SelectedNode.Connection.AuthMethod}" Classes="body" VerticalAlignment="Center" />
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="备注" Classes="body" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Top" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Main.SelectedNode.Connection.Notes}" Classes="body" TextWrapping="Wrap" />
+                </Grid>
+
+                <Border Background="{DynamicResource SurfaceRaisedBrush}" CornerRadius="4" Padding="12" Margin="0,10,0,0">
+                    <StackPanel Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mi:MaterialIcon Kind="LightbulbOnOutline" Width="16" Height="16" Foreground="{DynamicResource StatusWarningBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="提示" Classes="body" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="• 双击左侧连接树中的连接，或点击右上角「发起连接」，将建立会话并在标题栏打开新的会话标签页。"
+                                   Classes="caption" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="• 凭据已通过 Argon2id + AES-256-GCM 安全加密存储，不在此处明文展示。"
+                                   Classes="caption" Foreground="{DynamicResource TextMutedBrush}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

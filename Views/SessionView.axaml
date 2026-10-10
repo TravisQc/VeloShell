@@ -10,15 +10,17 @@
 
     <Grid RowDefinitions="Auto,*">
         <!-- Top Session Status Header -->
-        <Border Grid.Row="0" Background="#14808080" Padding="12,8" BorderBrush="#20808080" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceRaisedBrush}" Padding="12,8"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding Connection.Host, StringFormat='({0})'}" Foreground="#808080" FontSize="13" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Title}" Classes="subheading" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Connection.Host, StringFormat='({0})'}" Classes="caption"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                     <!-- Status Badge -->
-                    <Border CornerRadius="3" Padding="6,2"
-                            Background="{Binding IsConnected, Converter={x:Static ObjectConverters.IsNotNull}}">
-                        <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#DDD" />
+                    <Border CornerRadius="3" Padding="6,2" Background="{DynamicResource SurfaceOverlayBrush}">
+                        <TextBlock Text="{Binding StatusText}" Classes="caption"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Border>
                 </StackPanel>
 

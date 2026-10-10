@@ -531,6 +531,28 @@
           }
         }
       },
+      "Material.Icons/3.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Material.Icons.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Material.Icons.dll": {}
+        }
+      },
+      "Material.Icons.Avalonia/3.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Avalonia": "12.0.0",
+          "Material.Icons": "3.0.2"
+        },
+        "compile": {
+          "lib/net8.0/Material.Icons.Avalonia.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/Material.Icons.Avalonia.dll": {}
+        }
+      },
       "MicroCom.Runtime/0.11.6": {
         "type": "package",
         "compile": {
@@ -1237,6 +1259,7 @@
           "AvaloniaUI.DiagnosticsSupport": "2.2.3",
           "CommunityToolkit.Mvvm": "8.4.2",
           "Konscious.Security.Cryptography.Argon2": "1.3.1",
+          "Material.Icons.Avalonia": "3.0.2",
           "SSH.NET": "2026.0.0",
           "XTerm.NET": "1.2.0"
         },
@@ -1956,6 +1979,32 @@
         "lib/net8.0/Konscious.Security.Cryptography.Blake2.xml",
         "lib/netstandard1.3/Konscious.Security.Cryptography.Blake2.dll",
         "lib/netstandard1.3/Konscious.Security.Cryptography.Blake2.xml"
+      ]
+    },
+    "Material.Icons/3.0.2": {
+      "sha512": "vzeJjXu0PWJSZDCG0lL8+xx4Zf3i+iKOmu4GjGXtgAex22JPKDOaYPUU77Fd21LEsKrkrAQ1cZ61mrHPX1Elsg==",
+      "type": "package",
+      "path": "material.icons/3.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/netstandard2.0/Material.Icons.dll",
+        "material.icons.3.0.2.nupkg.sha512",
+        "material.icons.nuspec"
+      ]
+    },
+    "Material.Icons.Avalonia/3.0.2": {
+      "sha512": "zXUS04QfxgSv0oMbsIf+6fZqcQbyh3L920Ucif8UHLaaFRK9E5R80ixUPnBpFRwGNe4sTDNhUS2Ti1T1wT3g5A==",
+      "type": "package",
+      "path": "material.icons.avalonia/3.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net8.0/Material.Icons.Avalonia.dll",
+        "material.icons.avalonia.3.0.2.nupkg.sha512",
+        "material.icons.avalonia.nuspec"
       ]
     },
     "MicroCom.Runtime/0.11.6": {

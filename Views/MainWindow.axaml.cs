@@ -1,101 +1,71 @@
-using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using VeloShell.ViewModels;
 
 namespace VeloShell.Views;
 
 public partial class MainWindow : Window
 {
-    // In-process drag payload carrying the dragged connection's id.
-    private static readonly DataFormat<string> ConnectionIdFormat =
-        DataFormat.CreateInProcessFormat<string>("veloshell/connection-id");
-
-    private PointerPressedEventArgs? _pressedArgs;
-    private NodeViewModel? _pressedConnection;
-    private Point _pressPosition;
-
     public MainWindow()
     {
         InitializeComponent();
-
-        ConnectionTree.AddHandler(PointerPressedEvent, OnTreePointerPressed, RoutingStrategies.Tunnel);
-        ConnectionTree.AddHandler(PointerMovedEvent, OnTreePointerMoved, RoutingStrategies.Tunnel);
-        AddHandler(DragDrop.DragOverEvent, OnDragOver);
-        AddHandler(DragDrop.DropEvent, OnDrop);
+        PropertyChanged += OnWindowPropertyChanged;
     }
 
-    private void OnTreeDoubleTapped(object? sender, TappedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm && vm.SelectedNode is { IsFolder: false })
-        {
-            _ = vm.ConnectSelectedCommand.ExecuteAsync(null);
-        }
-    }
+    // ===== CSD window controls =====
 
-    private void OnTreePointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        var node = (e.Source as Control)?.DataContext as NodeViewModel;
-        if (node is { IsFolder: false })
-        {
-            _pressedConnection = node;
-            _pressedArgs = e;
-            _pressPosition = e.GetPosition(this);
-        }
-        else
-        {
-            _pressedConnection = null;
-            _pressedArgs = null;
-        }
-    }
+    private void OnMinimize(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        => WindowState = WindowState.Minimized;
 
-    private async void OnTreePointerMoved(object? sender, PointerEventArgs e)
+    private void OnMaximizeRestore(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        => ToggleMaximize();
+
+    private void OnClose(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        => Close();
+
+    private void ToggleMaximize()
+        => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+
+    // ===== Title-bar drag / double-tap =====
+
+    private void OnTitleBarPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (_pressedConnection is null || _pressedArgs is null)
-            return;
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            return;
+
+        // Double-click the blank chrome toggles maximize.
+        if (e.ClickCount == 2)
         {
-            _pressedConnection = null;
-            _pressedArgs = null;
+            if (!IsInteractive(e.Source as Control))
+                ToggleMaximize();
             return;
         }
 
-        var pos = e.GetPosition(this);
-        if (Math.Abs(pos.X - _pressPosition.X) < 6 && Math.Abs(pos.Y - _pressPosition.Y) < 6)
-            return;
-
-        var node = _pressedConnection;
-        var pressed = _pressedArgs;
-        _pressedConnection = null;
-        _pressedArgs = null;
-
-        var data = new DataTransfer();
-        data.Add(DataTransferItem.Create(ConnectionIdFormat, node.Id));
-        await DragDrop.DoDragDropAsync(pressed, data, DragDropEffects.Move);
+        // Drag only from blank chrome — never from tabs, [+], or window controls.
+        if (!IsInteractive(e.Source as Control))
+            BeginMoveDrag(e);
     }
 
-    private void OnDragOver(object? sender, DragEventArgs e)
+    // Walks up from the pressed element to the title bar; interactive controls
+    // (tab strip, buttons) must handle their own clicks, not start a window drag.
+    private bool IsInteractive(Control? source)
     {
-        e.DragEffects = TargetFolder(e) is not null && e.DataTransfer.Contains(ConnectionIdFormat)
-            ? DragDropEffects.Move
-            : DragDropEffects.None;
+        var current = source;
+        while (current is not null && current != TitleBar)
+        {
+            if (current is Button || current is ListBox || current is ListBoxItem)
+                return true;
+            current = current.Parent as Control;
+        }
+        return false;
     }
 
-    private void OnDrop(object? sender, DragEventArgs e)
+    // ===== Maximized padding =====
+    // With an extended client area, a maximized window overhangs the work area by
+    // the resize-border width; pad the content so nothing is clipped off-screen.
+    private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (DataContext is not MainViewModel vm)
-            return;
-
-        var folder = TargetFolder(e);
-        if (folder is not null && e.DataTransfer.TryGetValue(ConnectionIdFormat) is { } connectionId)
-            vm.MoveConnection(connectionId, folder.Id);
-    }
-
-    private static NodeViewModel? TargetFolder(DragEventArgs e)
-    {
-        var node = (e.Source as Control)?.DataContext as NodeViewModel;
-        return node is { IsFolder: true } ? node : null;
+        if (e.Property == WindowStateProperty)
+            Padding = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
     }
 }

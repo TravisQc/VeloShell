@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using VeloShell.Models;
 using VeloShell.Services;
@@ -38,63 +37,110 @@ public class MainViewModelSessionTests
         public void Reset() { }
     }
 
-    [Fact]
-    public void InitialState_HasOneDetailTab()
+    private static MainViewModel NewMain()
+        => new MainViewModel(new DummyConnectionStore(), new DummyCredentialStore());
+
+    private static SessionViewModel NewSession()
     {
-        var connStore = new DummyConnectionStore();
-        var credStore = new DummyCredentialStore();
-        var vm = new MainViewModel(connStore, credStore);
-
-        Assert.Single(vm.Tabs);
-        Assert.IsType<ConnectionDetailTabViewModel>(vm.Tabs[0]);
-        Assert.Same(vm.Tabs[0], vm.SelectedTab);
-        Assert.False(vm.Tabs[0].CanClose);
-    }
-
-    [Fact]
-    public async Task CloseAllSessionsAsync_RemovesOnlySessionTabs()
-    {
-        var connStore = new DummyConnectionStore();
-        var credStore = new DummyCredentialStore();
-        var vm = new MainViewModel(connStore, credStore);
-
         var conn = new Connection { Host = "127.0.0.1", Username = "user" };
         var session = new SshSession(conn, "pwd");
         var collector = new SystemMetricsCollector(session);
         var sftp = new SftpService(session);
-        var sessionVm = new SessionViewModel(session, collector, sftp);
+        return new SessionViewModel(session, collector, sftp);
+    }
 
-        vm.Tabs.Add(sessionVm);
-        vm.SelectedTab = sessionVm;
-        Assert.Equal(2, vm.Tabs.Count);
+    [Fact]
+    public void InitialState_ShowsLauncher_WithNoSessions()
+    {
+        var vm = NewMain();
+
+        Assert.Empty(vm.Sessions);
+        Assert.NotNull(vm.Launcher);
+        Assert.Null(vm.ActiveSession);
+        Assert.True(vm.IsLauncherVisible);
+        Assert.False(vm.HasActiveSession);
+    }
+
+    [Fact]
+    public void ActivatingSession_HidesLauncher_AndShowLauncherRestoresIt()
+    {
+        var vm = NewMain();
+        var session = NewSession();
+        vm.Sessions.Add(session);
+
+        vm.ActiveSession = session;
+        Assert.False(vm.IsLauncherVisible);
+        Assert.True(vm.HasActiveSession);
+
+        vm.ShowLauncherCommand.Execute(null);
+        Assert.Null(vm.ActiveSession);
+        Assert.True(vm.IsLauncherVisible);
+
+        // The launcher is not a member of the session collection; showing it
+        // does not add a tab.
+        Assert.Single(vm.Sessions);
+    }
+
+    [Fact]
+    public async Task CloseAllSessions_ClearsSessions_AndShowsLauncher()
+    {
+        var vm = NewMain();
+        var first = NewSession();
+        var second = NewSession();
+        vm.Sessions.Add(first);
+        vm.Sessions.Add(second);
+        vm.ActiveSession = second;
 
         await vm.CloseAllSessionsAsync();
 
-        Assert.Single(vm.Tabs);
-        Assert.IsType<ConnectionDetailTabViewModel>(vm.Tabs[0]);
-        Assert.Same(vm.Tabs[0], vm.SelectedTab);
+        Assert.Empty(vm.Sessions);
+        Assert.Null(vm.ActiveSession);
+        Assert.True(vm.IsLauncherVisible);
     }
 
     [Fact]
-    public void CloseTab_RemovesSpecificSessionTab()
+    public void CloseTab_RemovesSession_AndFallsBackToRemainingThenLauncher()
     {
-        var connStore = new DummyConnectionStore();
-        var credStore = new DummyCredentialStore();
-        var vm = new MainViewModel(connStore, credStore);
+        var vm = NewMain();
+        var first = NewSession();
+        var second = NewSession();
+        vm.Sessions.Add(first);
+        vm.Sessions.Add(second);
+        vm.ActiveSession = second;
 
-        var conn = new Connection { Host = "127.0.0.1", Username = "user" };
-        var session = new SshSession(conn, "pwd");
-        var collector = new SystemMetricsCollector(session);
-        var sftp = new SftpService(session);
-        var sessionVm = new SessionViewModel(session, collector, sftp);
+        vm.CloseTab(second);
+        Assert.Single(vm.Sessions);
+        Assert.Same(first, vm.ActiveSession);
+        Assert.False(vm.IsLauncherVisible);
 
-        vm.Tabs.Add(sessionVm);
-        vm.SelectedTab = sessionVm;
+        vm.CloseTab(first);
+        Assert.Empty(vm.Sessions);
+        Assert.Null(vm.ActiveSession);
+        Assert.True(vm.IsLauncherVisible);
+    }
 
-        vm.CloseTab(sessionVm);
+    [Fact]
+    public void SessionMode_IsRetainedPerSession()
+    {
+        var vm = NewMain();
+        var first = NewSession();
+        var second = NewSession();
+        vm.Sessions.Add(first);
+        vm.Sessions.Add(second);
 
-        Assert.Single(vm.Tabs);
-        Assert.IsType<ConnectionDetailTabViewModel>(vm.Tabs[0]);
-        Assert.Same(vm.Tabs[0], vm.SelectedTab);
+        first.SetModeCommand.Execute(SessionMode.Host);
+        second.SetModeCommand.Execute(SessionMode.Settings);
+
+        // Activating each session reflects that session's own current mode,
+        // not a globally shared one.
+        vm.ActiveSession = first;
+        Assert.Equal(SessionMode.Host, vm.ActiveSession!.CurrentMode);
+
+        vm.ActiveSession = second;
+        Assert.Equal(SessionMode.Settings, vm.ActiveSession!.CurrentMode);
+
+        // Switching back leaves the first session's mode untouched.
+        vm.ActiveSession = first;
+        Assert.Equal(SessionMode.Host, vm.ActiveSession!.CurrentMode);
     }
 }

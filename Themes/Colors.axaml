@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Raw "deep-space" palette. These are the only hard-coded color literals in
+        the app; semantic Brushes reference them, and views reference the Brushes.
+        Retune the whole app from here.
+    -->
+
+    <!-- Deep-space surface ramp (darkest -> lightest) -->
+    <Color x:Key="SpaceVoid">#070A14</Color>
+    <Color x:Key="SpaceBase">#0D1220</Color>
+    <Color x:Key="SpaceRaised">#141A2C</Color>
+    <Color x:Key="SpaceOverlay">#1C2440</Color>
+    <Color x:Key="SpaceHover">#232D4E</Color>
+
+    <!-- Gradient endpoints for the main window background -->
+    <Color x:Key="SpaceGradientTop">#0B1020</Color>
+    <Color x:Key="SpaceGradientMid">#10172C</Color>
+    <Color x:Key="SpaceGradientBottom">#080B16</Color>
+
+    <!-- Accent (nebula blue) -->
+    <Color x:Key="AccentColor">#4EA1FF</Color>
+    <Color x:Key="AccentColorLight">#73B6FF</Color>
+    <Color x:Key="AccentColorDark">#2F7BE0</Color>
+
+    <!-- Borders / dividers -->
+    <Color x:Key="BorderColor">#2A3350</Color>
+    <Color x:Key="BorderStrongColor">#3A456B</Color>
+
+    <!-- Text -->
+    <Color x:Key="TextPrimaryColor">#E6EAF2</Color>
+    <Color x:Key="TextSecondaryColor">#9AA4BF</Color>
+    <Color x:Key="TextMutedColor">#6B7490</Color>
+
+    <!-- Status -->
+    <Color x:Key="StatusHealthyColor">#3DD68C</Color>
+    <Color x:Key="StatusWarningColor">#F5B547</Color>
+    <Color x:Key="StatusErrorColor">#FF5C6C</Color>
+    <Color x:Key="StatusInfoColor">#4EA1FF</Color>
+</ResourceDictionary>
